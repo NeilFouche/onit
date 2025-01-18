@@ -20,13 +20,13 @@ class TableGetPostProcessor(PostProcessor):
     def __init__(self, table):
         self.table = table
 
-    def process(self, data):
+    def process(self, data, hash_key=None):
         """
         Method to process data after getting a record
         """
-        return self._apply_data_transformations(data)
+        return self._apply_data_transformations(data, hash_key)
 
-    def _apply_data_transformations(self, data):
+    def _apply_data_transformations(self, data, hash_key):
         """
         Method to apply data transformations
         """
@@ -35,9 +35,9 @@ class TableGetPostProcessor(PostProcessor):
         )
 
         if not transformer:
-            return list(data.values())
+            return self.table.__dict__
 
         if not isinstance(data, list):
-            return transformer.transform([data])[0]
+            return transformer.transform([data], hash_key)[0]
 
-        return transformer.transform(data)
+        return transformer.transform(data, hash_key)

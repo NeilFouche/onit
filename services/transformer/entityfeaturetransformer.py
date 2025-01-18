@@ -16,7 +16,7 @@ class EntityFeatureTransformer(TransformerService):
     Used by: Front - Entity feature data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         entity_feature_data = []
         for entity_feature in data:
             entity_feature_data.append({

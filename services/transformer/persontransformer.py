@@ -16,7 +16,7 @@ class PersonTransformer(TransformerService):
     Used by: Front - Person data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         person_data = []
         for person in data:
             person_data.append({

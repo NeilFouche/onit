@@ -4,18 +4,18 @@ This file is used to configure the app and load the configuration.
 
 import atexit
 from django.apps import AppConfig
-from onitweb.settings import env
+from onit.settings import env
 from services.configuration import ConfigurationService
 from services.database.database import DatabaseService
 from services.scheduling import Scheduler, ObjectCacheCleanupTask
 
 
-class AppfrontConfig(AppConfig):
+class ApiConfig(AppConfig):
     """
-    AppfrontConfig class
+    ApiConfig class
     """
     default_auto_field = "django.db.models.BigAutoField"
-    name = "front"
+    name = "api"
     database = None
 
     def ready(self):
@@ -24,7 +24,7 @@ class AppfrontConfig(AppConfig):
         """
 
         # Instantiate Singleton instances
-        AppfrontConfig.database = DatabaseService(database="MySQL")
+        ApiConfig.database = DatabaseService(database="MySQL")
 
         # Load configuration
         ConfigurationService.load_configuration()

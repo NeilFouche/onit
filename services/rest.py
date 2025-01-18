@@ -15,8 +15,13 @@ from libs.strings import camel_to_snake, kebab_to_camel
 class RestService():
     """Handles REST API requests"""
 
-    request = None
+    requests = {}
     views = {}
+
+    @staticmethod
+    def remove_request(hash_key):
+        """Method to remove a request"""
+        RestService.requests.pop(hash_key, None)
 
     @staticmethod
     def error_response(error, status=400):
@@ -27,26 +32,33 @@ class RestService():
         }, status=status)
 
     @staticmethod
+    def extract_context(request):
+        """Method to extract the context"""
+        path = request.path.rstrip('/')
+        path_parts = path.split('/')
+        return path_parts[-1] if len(path_parts) > 2 else None
+
+    @staticmethod
     def get_token(request):
         """Method to get the CSRF token"""
         return JsonResponse({'csrf_token': get_token(request)})
 
     @staticmethod
-    def get_endpoint():
+    def get_endpoint(hash_key):
         """Method to get the endpoint"""
-        path = RestService.request.path.rstrip('/')
+        request = RestService.requests.get(hash_key)
+        path = request.path.rstrip('/')
         path_parts = path.split('/')
         return path_parts[2]
 
     @staticmethod
-    def get_context():
+    def get_context(hash_key):
         """Method to get context if provided"""
-        path = RestService.request.path.rstrip('/')
-        path_parts = path.split('/')
-        return path_parts[-1] if len(path_parts) > 2 else None
+        request = RestService.requests.get(hash_key)
+        return RestService.extract_context(request)
 
     @staticmethod
-    def get_hash():
+    def hash_request(request):
         """
         Method to get the hash
 
@@ -56,16 +68,17 @@ class RestService():
         Returns:
             str: The hashed key.
         """
-        target_table = RestService.get_target_table()
-        parts = [
-            target_table,
-            RestService.get_starting_table() or target_table,
-            json.dumps(RestService.get_query_parmeters())
-        ]
-        raw_key = ':'.join(parts)
-        hash_object = hashlib.md5(raw_key.encode('utf-8'))
+        hash_object = hashlib.md5(json.dumps(
+            obj=request.get_full_path()).encode('utf-8')
+        )
+        hash_key = hash_object.hexdigest()
 
-        return hash_object.hexdigest()
+        if hash_key in RestService.requests:
+            return hash_key
+
+        RestService.requests[hash_key] = request
+
+        return hash_key
 
     @staticmethod
     def get_message(data, table_name):
@@ -73,30 +86,32 @@ class RestService():
         return "No records found" if not data else f"{table_name} records retrieved succesfully"
 
     @staticmethod
-    def get_query_parmeters():
+    def get_query_parmeters(hash_key):
         """Method to get the query parameters"""
+        request = RestService.requests.get(hash_key)
         return {
             key: value
-            for key, value in RestService.request.GET.items() if key != 'table'
+            for key, value in request.GET.items() if key != 'table'
         }
 
     @staticmethod
-    def get_request_body():
+    def get_request_body(hash_key):
         """Method to get the request body"""
-        return RestService.request.body.decode('utf-8')
+        request = RestService.requests.get(hash_key)
+        return request.body.decode('utf-8')
 
     @staticmethod
-    def get_starting_table():
+    def get_starting_table(hash_key):
         """Method to get the starting table"""
-        return RestService._get_table_parameter()
+        return RestService._get_table_parameter(hash_key)
 
     @staticmethod
-    def get_target_table():
+    def get_target_table(hash_key):
         """Method to get the target table"""
-        return kebab_to_camel(RestService.get_endpoint())
+        return kebab_to_camel(RestService.get_endpoint(hash_key))
 
     @staticmethod
-    def get_table_name():
+    def get_table_name(hash_key):
         """
         Method to get the table name
 
@@ -105,19 +120,21 @@ class RestService():
         Returns:
             str: The table name converted to snake_case.
         """
-        table_name = RestService._get_table_parameter()
+        table_name = RestService._get_table_parameter(hash_key)
         if not table_name:
-            table_name = RestService.get_endpoint()
+            table_name = RestService.get_endpoint(hash_key)
 
         return camel_to_snake(table_name)
 
     @staticmethod
-    def get_view():
+    def get_view(hash_key):
         """Method to get the view"""
-        if RestService._is_token_endpoint():
+        if RestService._is_token_endpoint(hash_key):
             return RestService.views['get_token']
 
-        return RestService.views[RestService.request.method]
+        request = RestService.requests.get(hash_key)
+
+        return RestService.views[request.method]
 
     @staticmethod
     def register_view(label):
@@ -127,19 +144,20 @@ class RestService():
         def decorator(cls):
             RestService.views[label] = cls
             return cls
+
         return decorator
 
     @staticmethod
-    def response(data, error=None):
+    def response(hash_key, data, error=None):
         """Method to return a response"""
         try:
             # Raise the error if it was triggered by previous processes, e.g. validation
             if error:
                 raise ValueError(error)
 
-            table = RestService.get_table_name()
+            table = RestService.get_table_name(hash_key)
             message = RestService.get_message(data, table.title())
-            entities = RestService.get_query_parmeters()
+            entities = RestService.get_query_parmeters(hash_key)
 
             return JsonResponse({
                 "message": message,
@@ -157,20 +175,21 @@ class RestService():
             })
 
     @staticmethod
-    def _get_table_parameter():
+    def _get_table_parameter(hash_key):
         """Method to get the table"""
-        return RestService.request.GET.get('table', None)
+        request = RestService.requests.get(hash_key)
+        return request.GET.get('table', None)
 
     @staticmethod
-    def _is_token_endpoint():
+    def _is_token_endpoint(hash_key):
         """Method to determine if the endpoint is a token endpoint"""
-        return RestService.get_endpoint() == 'get-csrf-token'
+        return RestService.get_endpoint(hash_key) == 'get-csrf-token'
 
     @staticmethod
-    def _query_requires_join():
+    def _query_requires_join(hash_key):
         """Method to determine if a deep join is required"""
-        endpoint = RestService.get_endpoint()
-        table_name = RestService._get_table_parameter()
+        endpoint = RestService.get_endpoint(hash_key)
+        table_name = RestService._get_table_parameter(hash_key)
 
         if table_name:
             table_name = table_name.lower()

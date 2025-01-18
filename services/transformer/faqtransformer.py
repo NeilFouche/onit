@@ -16,7 +16,7 @@ class FaqTransformer(TransformerService):
     Used by: Front - FAQ data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         faq_data = []
         for faq in data:
             faq_data.append({

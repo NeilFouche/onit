@@ -17,7 +17,7 @@ class ParameterTransformer(TransformerService):
     Used by: Front - Parameter data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         parameter_data = []
         for parameter in data:
             parameter_data.append({

@@ -143,3 +143,10 @@ class CacheService:
         """Method to clear the object cache"""
 
         CacheService.object_cache.clear()
+
+    @staticmethod
+    def print_info():
+        """Method to print the cache info"""
+        CacheService.object_cache.print_info()
+        print(
+            f"Used memory: {CacheService.object_cache.storage} ({CacheService.object_cache.storage_threshold})")

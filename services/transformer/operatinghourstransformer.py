@@ -16,7 +16,7 @@ class OperatingHoursTransformer(TransformerService):
     Used by: Front - OperatingHours data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         weekdays_map = {
             "MON": "Monday",
             "TUE": "Tuesday",

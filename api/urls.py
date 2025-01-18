@@ -3,7 +3,7 @@ Urls for the app front
 """
 
 from django.urls import path
-from front import views
+from api import views
 
 urlpatterns = [
     path('abc-testing/', views.test_view, name='abc-testing'),

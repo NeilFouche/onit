@@ -16,7 +16,7 @@ class ProjectTransformer(TransformerService):
     Used by: Front - Project data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         client_transformer = TransformerService.get_transformer('Table:Client')
         region_transformer = TransformerService.get_transformer('Table:Region')
         project_data = []

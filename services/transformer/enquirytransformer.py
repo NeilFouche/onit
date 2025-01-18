@@ -16,7 +16,7 @@ class EnquiryTransformer(TransformerService):
     Used by: Front - Enquiry data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         enquiry_data = []
         for enquiry in data:
             enquiry_data.append({

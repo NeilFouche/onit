@@ -3,8 +3,7 @@ Register the webste data models for maintenance in the Admin App.
 """
 
 from django.contrib import admin
-
-from front import models
+from api import models
 
 
 @admin.register(models.Feature)

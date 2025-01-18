@@ -1,13 +1,12 @@
 """
-front/views.py
+api/views.py
 Handling Requests from the frontend
 """
 
 from django.views.decorators.csrf import csrf_exempt
-from front.models import Employee, MediaAsset, ServiceMethod
+from api.models import Employee, MediaAsset
 from services.cache import CacheService
 from services.database import DatabaseService, Query
-from services.transformer import TransformerService
 from services.rest import RestService
 
 
@@ -18,8 +17,8 @@ def view_manager(request):
     the view to handle the request.
     """
 
-    RestService.request = request
-    view = RestService.get_view()
+    hash_key = RestService.hash_request(request)
+    view = RestService.get_view(hash_key)
 
     return view(request)
 
@@ -45,76 +44,21 @@ def get_view(request):
     """
     try:
         # Set the request
-        RestService.request = request
-
-        hashed_key = RestService.get_hash()
+        hash_key = RestService.hash_request(request)
 
         # Get the requested records
-        data = CacheService.get_object(hashed_key)
+        data = CacheService.get_object(hash_key)
         if not data:
             onitdb = DatabaseService.get_database()
             data = onitdb.fetch_data(
-                target=RestService.get_target_table(),
-                source=RestService.get_starting_table(),
-                filter_params=RestService.get_query_parmeters()
+                target=RestService.get_target_table(hash_key),
+                source=RestService.get_starting_table(hash_key),
+                filter_params=RestService.get_query_parmeters(hash_key),
+                hash_key=hash_key
             )
-            CacheService.set_object(hashed_key, data)
+            CacheService.set_object(hash_key, data)
 
-        return RestService.response(data)
-    except ValueError as e:
-        return RestService.error_response(error=e)
-
-
-@RestService.register_view('get_shallow_view')
-def get_shallow_view(request):
-    """
-    View to handle GET requests from the frontend
-    """
-    try:
-        # Set the request
-        RestService.request = request
-        table_name = RestService.get_table_name()
-        hashed_key = RestService.get_hash()
-
-        # Get the requested records
-        data = CacheService.get_object(hashed_key)
-        if not data:
-            onitdb = DatabaseService.get_database()
-            table = onitdb.get_table(table_name)
-            query = Query.build(
-                query_parameters=RestService.get_query_parmeters()
-            )
-            data = table.filter(query)
-            CacheService.set_object(hashed_key, data)
-
-        return RestService.response(data)
-    except ValueError as e:
-        return RestService.error_response(error=e)
-
-
-@RestService.register_view('get_deep_view')
-def get_deep_view(request):
-    """
-    View to handle GET requests from the frontend that require a deep join
-    """
-    try:
-        # Set the request
-        RestService.request = request
-        query_parameters = RestService.get_query_parmeters()
-        hashed_key = RestService.get_hash()
-
-        # Get the requested records
-        data = CacheService.get_object(hashed_key)
-        if not data:
-            onitdb = DatabaseService.get_database()
-            query_path = onitdb.get_query_path(
-                start_table=RestService.get_starting_table(),
-                end_table=RestService.get_target_table()
-            )
-            data = onitdb.fetch_data(query_path, query_parameters)
-            CacheService.set_object(hashed_key, data)
-
-        return RestService.response(data)
+        return RestService.response(hash_key, data)
     except ValueError as e:
         return RestService.error_response(error=e)
 
@@ -131,25 +75,30 @@ def post_view(request):
     """
     try:
         # Set the request
-        RestService.request = request
-        data = RestService.get_request_body()
-        table_name = RestService.get_table_name()
+        hash_key = RestService.hash_request(request)
+        data = RestService.get_request_body(hash_key)
+        table_name = RestService.get_table_name(hash_key)
 
         # Create the record
         onitdb = DatabaseService.get_database()
         table = onitdb.get_table(table_name)
         data = table.create(data)
 
-        return RestService.response(data)
+        return RestService.response(hash_key, data)
     except ValueError as error:
         return RestService.error_response(error)
+
+
+###############################################################################
+#                                  TEST VIEW                                  #
+###############################################################################
 
 
 def test_view(request):
     """
     View to handle test requests from the frontend
     """
-    RestService.request = request
+    hash_key = RestService.hash_request(request)
 
     # Select related entities
     related_entity = Employee

@@ -17,10 +17,10 @@ class PageTransformer(TransformerService):
     Used by: Front - Page data
     """
 
-    def transform(self, data):
+    def transform(self, data, hash_key, *args, **kwargs):
         transformer = TransformerService.get_transformer("Table:Page")
 
-        context = RestService.get_context()
+        context = RestService.get_context(hash_key)
         if context:
             transformer = TransformerService.get_transformer(context)
             return transformer.transform(data)

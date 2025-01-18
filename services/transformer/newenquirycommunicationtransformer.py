@@ -14,7 +14,7 @@ class NewEnquiryCommunicationTransformer(TransformerService):
     Transformer for new enquiry email notification
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         return "\n".join([
             "A new enquiry was added with the following details:",
             f"Name: {data.name}",

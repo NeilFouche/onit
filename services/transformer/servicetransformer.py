@@ -16,7 +16,7 @@ class ServiceTransformer(TransformerService):
     Used by: Front - Service data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         service_data = []
         for service in data:
             service_data.append({

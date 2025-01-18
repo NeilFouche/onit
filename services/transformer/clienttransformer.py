@@ -16,7 +16,7 @@ class ClientTransformer(TransformerService):
     Used by: Front - Client data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         client_data = []
         for client in data:
             client_data.append({

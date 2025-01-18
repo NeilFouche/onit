@@ -19,7 +19,7 @@ This directory houses project-level configuration and entry-point files
 #### `.env`
 A place to store sensitive settings (e.g., database credentials) and using a library like django-environ can further enhance security.
 
-#### `front` App
+#### `api` App
 Serves as the main application for your website’s frontend functionality.
 
 #### `services`

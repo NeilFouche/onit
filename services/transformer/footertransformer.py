@@ -16,7 +16,7 @@ class FooterMenuTransformer(TransformerService):
     Used by: Front - Menu at the bottom of all pages except the landing page
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         nav_data = []
         for page in data:
             nav_data.append({

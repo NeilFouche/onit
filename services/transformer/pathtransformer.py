@@ -17,7 +17,7 @@ class PathsTransformer(TransformerService):
     Used by: Front - Menu at the bottom of all pages except the landing page
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         paths = {}
         for page in data:
             if page.children.exists():

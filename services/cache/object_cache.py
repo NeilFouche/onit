@@ -62,6 +62,9 @@ class ObjectCache:
 
         return self._cached_objects.get(key, None)
 
+    def print_info(self):
+        print(f"Number of cached objects: {len(self._cached_objects)}")
+
     def delete(self, key):
         """
         Deletes an object from the cache.

@@ -9,7 +9,6 @@ Tables:
 
 import json
 from abc import ABC, abstractmethod
-from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
 from components.version_control import EntityState
@@ -24,6 +23,7 @@ class Table(ABC):
     def __init__(self, table_name):
         self.table_name = table_name
         self._fields = []
+        self._querysets = {}
 
     @staticmethod
     def register_implementation(label):
@@ -125,9 +125,9 @@ class MySQLTable(Table):
         self._field_names = []
         self._initialize_fields()
         self._type = None
-        self._queryset = None
         self._foreign_keys = {}
         self.dependent_table = None
+        self._querysets = {}
 
         super().__init__(self.table_name)
 
@@ -139,11 +139,8 @@ class MySQLTable(Table):
         """
         Method to create an item in the table
 
-        Args:
-            item (dict): The item to create
-
-        Returns:
-            Model: The created model instance
+        :param item (dict): The item to create
+        :returns Model: The created model instance
         """
         try:
             executor = TableExecutor.get_executor("Create")(self)
@@ -156,20 +153,17 @@ class MySQLTable(Table):
         except ValueError as error:
             return error
 
-    def get(self, primary_key, processor="Table:Get:SingleRecord", post_processor=None):
+    def get(self, pk, processor="Table:Get:SingleRecord", post_processor=None):
         """
         Method to get an item from the table
 
-        Args:
-            primary_key (int): The primary key of the item to get
-
-        Returns:
-            Model: The model instance
+        :param primary_key (int): The primary key of the item to get
+        :returns Model: The model instance
         """
         try:
             executor = TableExecutor.get_executor("Get")(self)
             return executor.execute(
-                primary_key=primary_key,
+                primary_key=pk,
                 processor=processor,
                 post_processor=post_processor
             )
@@ -183,6 +177,7 @@ class MySQLTable(Table):
     def filter(
         self,
         query,
+        hash_key=None,
         select_related=None,
         prefetch_related=None,
         processor="Table:Get:MultipleRecords",
@@ -191,17 +186,16 @@ class MySQLTable(Table):
         """
         Method to filter items from the table
 
-        Args:
-            query (dict): The query to filter the items
-            select_related (list): The fields to select related
-            prefetch_related (list): The fields to prefetch related
-
-        Returns:
-            QuerySet: The filtered queryset
+        :param query (dict): The query to filter the items
+        :param select_related (list): The fields to select related
+        :param prefetch_related (list): The fields to prefetch related
+        :returns QuerySet: The filtered queryset
         """
+
         executor = TableExecutor.get_executor("Filter")(self)
         return executor.execute(
             query=query,
+            hash_key=hash_key,
             select_related=select_related,
             prefetch_related=prefetch_related,
             processor=processor,
@@ -220,12 +214,9 @@ class MySQLTable(Table):
         """
         Method to update an item in the table
 
-        Args:
-            query (dict): The query to find the item to update
-            item (dict): The item to update
-
-        Returns:
-            Model: The updated model instance
+        :param query (dict): The query to find the item to update
+        :item (dict): The item to update
+        :returns Model: The updated model instance
         """
         try:
             executor = TableExecutor.get_executor("Update")(self)
@@ -248,11 +239,8 @@ class MySQLTable(Table):
         """
         Method to delete an item from the table
 
-        Args:
-            query (dict): The query to find the item to delete
-
-        Returns:
-            bool: True if the item was deleted, False otherwise
+        :param query (dict): The query to find the item to delete
+        :returns bool: True if the item was deleted, False otherwise
         """
         try:
             executor = TableExecutor.get_executor("Delete")(self)
@@ -290,11 +278,8 @@ class MySQLTable(Table):
         """
         Method to create a memento
 
-        Args:
-            item (dict): A query to find the item to save
-
-        Returns:
-            EntityState: The state of the item
+        :param item (dict): A query to find the item to save
+        :returns EntityState: The state of the item
         """
 
         return EntityState(
@@ -309,8 +294,7 @@ class MySQLTable(Table):
         """
         Method to restore a memento
 
-        Args:
-            state (EntityState): The state to restore
+        :param state (EntityState): The state to restore
         """
         model = self._data_model
         instance = model.objects.get(pk=state.entity_id)
@@ -326,14 +310,11 @@ class MySQLTable(Table):
         """
         Method to optimize the queryset
 
-        Args:
-            queryset (QuerySet): The queryset to optimize.
-            query (dict): The query to filter the queryset.
-            custom_select_related (list): The custom select related fields.
-            custom_prefetch_related (list): The custom prefetch related fields.
-
-        Returns:
-            QuerySet: The optimized queryset.
+        :param queryset (QuerySet): The queryset to optimize.
+        :param query (dict): The query to filter the queryset.
+        :param custom_select_related (list): The custom select related fields.
+        :param custom_prefetch_related (list): The custom prefetch related fields.
+        :returns QuerySet: The optimized queryset.
         """
         select_related_fields = custom_select_related or []
         prefetch_related_fields = custom_prefetch_related or []
@@ -358,8 +339,7 @@ class MySQLTable(Table):
         """
         Method to update the fields of the table
 
-        Args:
-            item (dict): The item to update the fields with
+        :param item (dict): The item to update the fields with
         """
         for field in self.field_names:
             if field in item:
@@ -371,6 +351,44 @@ class MySQLTable(Table):
         """
         return self._foreign_keys.get(neighbour)
 
+    def get_queryset(self, hash_key, reset=True):
+        """
+        Returns the queryset corresponding to the hash key. Will first check if
+        it exists, otherwise if reset is True, will return a full queryset
+        (for all records).
+        """
+        if self._querysets.get(hash_key, None):
+            return self._querysets[hash_key]
+
+        if reset:
+            self.set_queryset(hash_key, reset=True)
+            return self._querysets[hash_key]
+
+        return None
+
+    def set_queryset(self, hash_key, queryset=None, filter_params=None, reset=False):
+        """
+        Method to handle specific queryset operations.
+
+        :param queryset: The queryset to set.
+        :param filter_params: The filter parameters to apply.
+        :param clear: A flag to clear the queryset.
+        """
+        # overwrite mode
+        if queryset:
+            self._querysets[hash_key] = queryset
+            return
+
+        # clear mode
+        if reset:
+            self._querysets[hash_key] = None
+            self._querysets[hash_key] = self._data_model.objects.all()
+
+        # refine queryset
+        if filter_params:
+            self._querysets[hash_key] = self._querysets[hash_key].filter(
+                **filter_params)
+
     ###########################################################################
     #                            PRIVATE METHODS                              #
     ###########################################################################
@@ -379,8 +397,7 @@ class MySQLTable(Table):
         """
         Method to list the fields of the table
 
-        Returns:
-            list: The fields of the table
+        :returns list: The fields of the table
         """
         return self._data_model._meta.get_fields()
 
@@ -398,11 +415,8 @@ class MySQLTable(Table):
         """
         Method to check if the field is a foreign key
 
-        Args:
-            field (Field): The field to check
-
-        Returns:
-            bool: True if the field is a foreign key, False otherwise
+        :param field (Field): The field to check
+        :returns bool: True if the field is a foreign key, False otherwise
         """
         return isinstance(field, (models.ForeignKey, models.OneToOneField))
 
@@ -410,11 +424,8 @@ class MySQLTable(Table):
         """
         Method to check if the field is a many to many
 
-        Args:
-            field (Field): The field to check
-
-        Returns:
-            bool: True if the field is a many to many, False otherwise
+        :param field (Field): The field to check
+        :returns bool: True if the field is a many to many, False otherwise
         """
         return isinstance(field, models.ManyToManyField)
 
@@ -434,8 +445,7 @@ class MySQLTable(Table):
         """
         Property to get the fields of the table
 
-        Returns:
-            list: The fields of the table
+        :returns list: The fields of the table
         """
         if not self._fields:
             self._fields = self._get_fields()
@@ -446,8 +456,7 @@ class MySQLTable(Table):
         """
         Property to get the model name
 
-        Returns:
-            str: The model name
+        :returns str: The model name
         """
         return self._data_model._meta.object_name
 
@@ -456,8 +465,7 @@ class MySQLTable(Table):
         """
         Property to get the model
 
-        Returns:
-            Model: The model
+        :returns Model: The model
         """
         return self._data_model
 
@@ -466,29 +474,9 @@ class MySQLTable(Table):
         """
         Property to get the type of the table
 
-        Returns:
-            str: The type of the table
+        :returns str: The type of the table
         """
         return self._type and self._type == "intermediate"
-
-    @property
-    def queryset(self):
-        """
-        Returns the queryset saved with last fetch.
-
-        If none, returns the queryset for all records
-        """
-        if not self._queryset:
-            self._queryset = self._data_model.objects.all()
-
-        return self._queryset
-
-    @queryset.setter
-    def queryset(self, queryset):
-        """
-        Setter for the queryset
-        """
-        self._queryset = queryset
 
     @property
     def foreign_keys(self):
@@ -525,6 +513,9 @@ class MySQLTable(Table):
     def __str__(self):
         return self.table_name
 
+    def __dict__(self):
+        return {name: getattr(self, name) for name in self.field_names}
+
     def __repr__(self):
         table_details = {
             "name": self.table_name,
@@ -532,5 +523,5 @@ class MySQLTable(Table):
             "dependent": self.dependent_table,
             "fields": self.field_names
         }
+
         return json.dumps(table_details)
-        # return self.table_name

@@ -39,7 +39,7 @@ class TableUpdatePostProcessor(PostProcessor):
         self.table = table
         self.database = DatabaseService.get_database()
 
-    def process(self, data):
+    def process(self, data, hash_key=None):
         """
         Method to process data after updating a record
         """
@@ -47,9 +47,9 @@ class TableUpdatePostProcessor(PostProcessor):
         self._verify_dependency_integrity(data)
         self._send_notifications(data)
 
-        return self._apply_data_transformations(data)
+        return self._apply_data_transformations(data, hash_key)
 
-    def _apply_data_transformations(self, data):
+    def _apply_data_transformations(self, data, hash_key):
         """
         Method to apply data transformations
         """
@@ -61,9 +61,9 @@ class TableUpdatePostProcessor(PostProcessor):
             return list(data.values())
 
         if not isinstance(data, list):
-            return transformer.transform([data])[0]
+            return transformer.transform([data], hash_key)[0]
 
-        return transformer.transform(data)
+        return transformer.transform(data, hash_key)
 
     def _version_control(self, data):
         """

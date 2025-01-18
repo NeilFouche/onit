@@ -42,6 +42,7 @@ class TableExecutor(Manager):
         """Method to execute"""
         data = kwargs.get("data", {})
         query = kwargs.get("query", {})
+        hash_key = kwargs.get("hash_key", None)
         processor = kwargs.get("processor", None)
         pre_processor = kwargs.get("pre_processor", None)
         post_processor = kwargs.get("post_processor", None)
@@ -56,6 +57,9 @@ class TableExecutor(Manager):
                 pre_processor.process(query)
 
         data = self.execute_action(**kwargs)
+
+        if hash_key:
+            self.table.set_queryset(hash_key, queryset=data)
 
         # Post-processing
         post_processor = post_processor if post_processor else processor
@@ -146,8 +150,14 @@ class FilterTableExecutor(TableExecutor):
             QuerySet: The filtered queryset
         """
         query = kwargs.get("query", {})
+        hash_key = kwargs.get("hash_key", None)
         select_related = kwargs.get("select_related", [])
         prefetch_related = kwargs.get("prefetch_related", [])
+
+        if hash_key:
+            queryset = self.table.get_queryset(hash_key, reset=False)
+            if queryset:
+                return queryset
 
         formatted_query = {}
         if query and "include" not in query:
@@ -163,7 +173,8 @@ class FilterTableExecutor(TableExecutor):
         )
         items = queryset\
             .filter(**formatted_query.get("include", {}))\
-            .exclude(**formatted_query.get("exclude", {}))
+            .exclude(**formatted_query.get("exclude", {}))\
+            .distinct()
 
         return items
 

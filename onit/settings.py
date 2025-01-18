@@ -1,5 +1,5 @@
 """
-Django settings for onitweb project.
+Django settings for onit project.
 Django 5.1.2
 """
 
@@ -34,10 +34,9 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "front",
+    'api',
     "django_extensions",
     "corsheaders",
-    'rest_framework',
     'debug_toolbar',
 ]
 
@@ -69,10 +68,10 @@ TEMPLATES = [
     },
 ]
 
-ROOT_URLCONF = "onitweb.urls"
+ROOT_URLCONF = "onit.urls"
 
 # Web Server Gateway Interface (WSGI) application
-WSGI_APPLICATION = "onitweb.wsgi.application"
+WSGI_APPLICATION = "onit.wsgi.application"
 
 ###############################################################################
 #                              API / Routing Settings                         #

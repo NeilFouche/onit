@@ -23,9 +23,10 @@ class DependencyService():
         package_files = [f for f in os.listdir(
             package) if f.endswith(".py") and not f.startswith("__")]
 
+        package_import_string = package.replace("/", ".")
+
         for file in package_files:
             module_name = file[:-3]
-            package_import_string = package.replace("/", ".")
             module = importlib.import_module(
                 f"{package_import_string}.{module_name}"
             )

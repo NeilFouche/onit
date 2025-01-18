@@ -16,7 +16,7 @@ class ServiceMethodTransformer(TransformerService):
     Used by: Front - Service method data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         service_transformer = TransformerService.get_transformer(
             'Table:Service')
         service_method_data = []

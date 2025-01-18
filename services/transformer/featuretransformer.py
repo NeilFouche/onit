@@ -16,7 +16,7 @@ class FeatureTransformer(TransformerService):
     Used by: Front - Feature data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         feature_data = []
         for feature in data:
             feature_data.append({

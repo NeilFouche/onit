@@ -16,7 +16,7 @@ class HeaderMenuTransformer(TransformerService):
     Used by: Front - Menu at the top of the page
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         nav_data = []
         for page in data:
             nav_data.append({

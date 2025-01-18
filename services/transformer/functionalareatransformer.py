@@ -16,7 +16,7 @@ class FunctionalAreaTransformer(TransformerService):
     Used by: Front - FunctionalArea data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         functional_area_data = []
         for functional_area in data:
             functional_area_data.append({

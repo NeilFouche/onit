@@ -16,7 +16,7 @@ class RegionTransformer(TransformerService):
     Used by: Front - Region data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         region_data = []
         for region in data:
             region_data.append({

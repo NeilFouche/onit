@@ -16,7 +16,7 @@ class SegmentTransformer(TransformerService):
     Used by: Front - Segment data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         segment_data = []
         for segment in data:
             segment_data.append({

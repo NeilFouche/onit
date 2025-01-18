@@ -16,7 +16,7 @@ class OfficeTransformer(TransformerService):
     Used by: Front - Office data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         office_data = []
         for office in data:
             office_data.append({

@@ -16,7 +16,7 @@ class SocialPlatformTransformer(TransformerService):
     Used by: Front - Social platform data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         social_platform_data = []
         for platform in data:
             social_platform_data.append({

@@ -16,7 +16,7 @@ class ReportingStructureTransformer(TransformerService):
     Used by: Front - ReportingStructure data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         reporting_structure_data = []
         for reporting_structure in data:
             reporting_structure_data.append({

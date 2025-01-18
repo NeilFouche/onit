@@ -8,6 +8,7 @@ Target: Frontend
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from libs.strings import kebab_to_camel
+from services.database import DatabaseService
 from services.transformer import TransformerService
 from services.rest import RestService
 
@@ -20,45 +21,37 @@ class MediaAssetTransformer(TransformerService):
     Used by: Front - Entity media data
     """
 
-    def transform(self, data):
-        context = RestService.get_context()
-        model_name = kebab_to_camel(context)
-        related_model = apps.get_model('front', model_name)
-        content_type = ContentType.objects.get_for_model(related_model)
-        query_parameters = RestService.get_query_parmeters()
-
-        media_asset_data = []
-        for media in data:
-            related_entity = self.select_entity(
-                media, content_type, query_parameters
-            )
-
-            media_asset_data.append({
-                'model': media._meta.label,
-                'entity_key': related_entity.key if related_entity else None,
-                'entity_label': str(related_entity) if related_entity else None,
-                'media_asset_key': media.key,
-                'media_asset_label': media.label,
-                'type': media.category,
-            })
-
-        return media_asset_data
-
-    def select_entity(self, media, content_type, query_parameters):
-        """
-        Finds the applicable entity for the media asset from requested context.
-        """
-
-        entities = list(
-            media.mediaentities.filter(content_type=content_type)
+    def transform(self, data, hash_key, *args, **kwargs):
+        onitdb = DatabaseService.get_database()
+        entity_media_set = onitdb.entity_media.get_queryset(
+            hash_key, reset=False
         )
 
-        if len(entities) == 1:
-            return entities[0].entity
+        media_asset_data = [{
+            'model': media._meta.label,
+            'entity_key': media.entity.key,
+            'entity_label': str(media.entity),
+            'media_asset_key': media.media_asset.key,
+            'media_asset_label': media.media_asset.label,
+            'type': media.media_asset.category,
+            'width': media.media_asset.width,
+            'height': media.media_asset.height
+        } for media in entity_media_set if media.media_asset] if entity_media_set else None
 
-        for related_entity in entities:
-            for key in query_parameters.keys():
-                if getattr(related_entity.entity, key) in query_parameters[key]:
-                    return related_entity.entity
+        if media_asset_data:
+            onitdb.entity_media.set_queryset(hash_key, queryset=None)
+            return media_asset_data
 
-        return None
+        transformer = TransformerService.get_transformer(
+            implementation='Table:MediaAsset:RelatedReduced'
+        )
+
+        return [{
+            'model': media._meta.label,
+            'entities': transformer.transform(media.mediaentities.values()),
+            'media_asset_key': media.key,
+            'media_asset_label': media.label,
+            'type': media.category,
+            'width': media.width,
+            'height': media.height
+        } for media in data]

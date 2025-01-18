@@ -1,5 +1,5 @@
 """
-URL configuration for onitweb project.
+URL configuration for onit project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -18,11 +18,10 @@ from django.contrib import admin
 from django.urls import include, path
 import debug_toolbar
 
-admin.site.site_header = "On It Web Admin"
-# admin.site.index_title = "Admin"
+admin.site.site_header = "On It Admin"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("front/", include('front.urls')),
-    path("__debug__", include(debug_toolbar.urls)),
+    path("api/", include('api.urls')),
+    path("__debug__", include(debug_toolbar.urls))
 ]

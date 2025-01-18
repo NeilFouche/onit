@@ -32,7 +32,7 @@ class TableCreatePostProcessor(PostProcessor):
     def __init__(self, table):
         self.table = table
 
-    def process(self, data):
+    def process(self, data, hash_key=None):
         """
         Method to process data after creating a record
         """

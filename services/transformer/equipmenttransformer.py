@@ -16,7 +16,7 @@ class EquipmentTransformer(TransformerService):
     Used by: Front - Equipment data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         equipment_data = []
         for equipment in data:
             equipment_data.append({

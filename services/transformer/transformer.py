@@ -65,6 +65,6 @@ class TransformerService(ABC):
         return TransformerService.transformer_implementations[implementation]
 
     @abstractmethod
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         """Default behavior (returns data as-is)"""
         return data

@@ -11,6 +11,9 @@ class PostProcessor(ABC):
 
     processor_implementations = {}
 
+    def __init__(self, table):
+        self.table = table
+
     @staticmethod
     def register_implementation(label):
         """
@@ -36,5 +39,5 @@ class PostProcessor(ABC):
         return PostProcessor.processor_implementations[implementation](table)
 
     @ abstractmethod
-    def process(self, data):
+    def process(self, data, hash_key):
         """Method to process data"""

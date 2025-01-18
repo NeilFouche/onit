@@ -17,7 +17,6 @@ from libs.strings import camel_to_snake
 from components import SchemaGraph
 from components.postprocessors import PostProcessor
 from services.database import Query, QueryPath, Table
-from services.transformer import TransformerService
 
 
 class DatabaseService():
@@ -63,7 +62,7 @@ class DatabaseService():
     ###########################################################################
 
     @staticmethod
-    def get_database(app="front"):
+    def get_database(app="api"):
         """
         Method to get the database
         """
@@ -73,7 +72,7 @@ class DatabaseService():
     #                             PUBLIC METHODS                              #
     ###########################################################################
 
-    def fetch_data(self, target, filter_params, source=None):
+    def fetch_data(self, target, filter_params, hash_key, source=None):
         """
         Method to fetch data from the database
         """
@@ -83,7 +82,7 @@ class DatabaseService():
 
         source_table = self.get_table(camel_to_snake(source))
         query = Query.build(filter_params)
-        queryset = source_table.filter(query, processor=None)
+        queryset = source_table.filter(query, hash_key, processor=None)
 
         if source != target:
             path = self.get_query_path(source, target)
@@ -108,8 +107,11 @@ class DatabaseService():
                     break
 
                 predecessor = self.get_table(path.names[next_im+1])
-                predecessor.queryset = queryset
+                predecessor.set_queryset(
+                    hash_key=hash_key, queryset=queryset, reset=True
+                )
                 queryset = self.resolve_intermediate_relationship(
+                    hash_key=hash_key,
                     predecessor=predecessor,
                     intermediate_table=self.get_table(path.names[next_im]),
                     successor=self.get_table(path.names[next_im-1])
@@ -120,7 +122,7 @@ class DatabaseService():
             table=self.get_table(camel_to_snake(target))
         )
 
-        return post_processor.process(queryset)
+        return post_processor.process(queryset, hash_key)
 
     def _reduce_segment(self, query_path, query_parameters):
         """
@@ -147,10 +149,10 @@ class DatabaseService():
         end_table_name = end_table_data["table_name"]
         end_table = self.get_table(camel_to_snake(end_table_name))
 
-        return end_table.filter(filtered_params, processor=None)
+        return end_table.filter(filtered_params, processor=None).distinct()
 
     def resolve_intermediate_relationship(
-        self, predecessor: Table, intermediate_table: Table, successor: Table
+        self, hash_key: str, predecessor: Table, intermediate_table: Table, successor: Table
     ) -> QuerySet:
         """
         Method to resolve the intermediate relationship
@@ -162,9 +164,9 @@ class DatabaseService():
         """
 
         if self._approaching_from_left(predecessor, intermediate_table):
-            return self._resolve_from_left(predecessor, intermediate_table, successor)
+            return self._resolve_from_left(hash_key, predecessor, intermediate_table, successor)
 
-        return self._resolve_from_right(predecessor, intermediate_table, successor)
+        return self._resolve_from_right(hash_key, predecessor, intermediate_table, successor)
 
     def get_query_path(self, start_table, end_table):
         """
@@ -190,9 +192,28 @@ class DatabaseService():
 
         return QueryPath(path)
 
-    def get_table(self, table_name: str):
+    def get_table(self, table_name):
         """Method to get a table by name"""
         return getattr(self, table_name)
+
+    def get_table_from_type(self, content_type_id=None):
+        """
+        Method to get a related table.
+
+        Uses model_name_mapping dict to recover the table name from the content
+        type model.
+
+        :param content_type_id: A content type ID
+        :return: A table object
+        """
+
+        model = self.content_type.get(pk=content_type_id, processor=None).model
+        table_name = self._model_name_mapping.get(model, None)
+
+        if not table_name:
+            return None
+
+        return self.get_table(table_name)
 
     ###########################################################################
     #                             PRIVATE METHODS                             #
@@ -227,9 +248,8 @@ class DatabaseService():
         """
         Method to get the schema for the database
         """
-        parameters = self.get_table("parameter")
-        db_schema_parameter = parameters.\
-            filter({"key": "Database:Schema:Global"})
+        db_schema_parameter = self.parameter\
+            .filter({"key": "Database:Schema:Global"})
 
         db_schema = db_schema_parameter[0].get("value", None)
 
@@ -258,6 +278,12 @@ class DatabaseService():
             if not hasattr(self, "_table_types"):
                 setattr(self, "_table_types", {})
             self._table_types[table_name] = table_type
+
+            # Update model name mapping
+            if not hasattr(self, "_model_name_mapping"):
+                setattr(self, "_model_name_mapping", {})
+            django_table_name = table_name.lower()
+            self._model_name_mapping[django_table_name] = table_attribute_name
 
         return schema
 
@@ -309,11 +335,8 @@ class DatabaseService():
         """
         Method to identify the intermediate nodes in the path
 
-        Args:
-            path (QueryPath): The path to identify the intermediate nodes
-
-        Returns:
-            list: The list of intermediate nodes
+        :path (QueryPath): The path to identify the intermediate nodes
+        :Returns list: The list of intermediate nodes
         """
         intermediate_nodes = [
             i for i, node in enumerate(path) if node["table_name"] in self._intermediate_tables
@@ -321,37 +344,56 @@ class DatabaseService():
 
         return [-1] + intermediate_nodes + [len(path)]
 
-    def _resolve_from_left(self, predecessor, intermediate_table, successor):
+    def _resolve_from_left(self, hash_key, predecessor, intermediate_table, successor):
         """
         Method to resolve the query from the left
         """
         intermediate_related_name = intermediate_table.get_related_name(
             neighbour=predecessor.table_name
         )
+        predecessor_queryset = predecessor.get_queryset(hash_key)
         filter_params = {
             "content_type__model": successor.model_name,
-            f"{intermediate_related_name}__in": predecessor.queryset.values_list("id", flat=True)
+            f"{intermediate_related_name}__in": predecessor_queryset.values_list("id", flat=True)
         }
-        intermediate_values = intermediate_table.queryset.\
-            filter(**filter_params).\
-            values_list("object_id", flat=True)
+        intermediate_table.set_queryset(
+            hash_key=hash_key, filter_params=filter_params, reset=True
+        )
+        intermediate_table_queryset = intermediate_table.get_queryset(hash_key)
+        intermediate_values = intermediate_table_queryset\
+            .values_list("object_id", flat=True)
 
-        return successor.queryset.filter(id__in=intermediate_values)
+        successor_queryset = successor.get_queryset(hash_key)
 
-    def _resolve_from_right(self, predecessor, intermediate_table, successor):
+        return successor_queryset.filter(id__in=intermediate_values).distinct()
+
+    def _resolve_from_right(self, hash_key, predecessor, intermediate_table, successor):
         """
         Method to resolve the query from the right
         """
         left_related_name = successor.get_related_name(
             neighbour=intermediate_table.table_name
         )
-        intermediate_values = predecessor.queryset.values_list("id", flat=True)
+        predecessor_queryset = predecessor.get_queryset(hash_key)
+        intermediate_values = predecessor_queryset.values_list("id", flat=True)
         filter_parameters = {
             f"{left_related_name}__content_type__model": predecessor.model_name,
             f"{left_related_name}__object_id__in": intermediate_values
         }
 
-        return successor.queryset.filter(**filter_parameters)
+        # Set intermediate table queryset for future reference
+        intermediate_table.set_queryset(
+            hash_key=hash_key,
+            filter_params={
+                "content_type__model": predecessor.model_name,
+                "object_id__in": intermediate_values
+            },
+            reset=True
+        )
+
+        successor_queryset = successor.get_queryset(hash_key)
+
+        return successor_queryset.filter(**filter_parameters).distinct()
 
     ###########################################################################
     #                               PROPERTIES                                #

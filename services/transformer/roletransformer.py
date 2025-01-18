@@ -16,7 +16,7 @@ class RoleTransformer(TransformerService):
     Used by: Front - Role data
     """
 
-    def transform(self, data):
+    def transform(self, data, *args, **kwargs):
         reporting_structure_transformer = TransformerService.get_transformer(
             implementation='Table:ReportingStructure'
         )
