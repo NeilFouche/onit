@@ -3,10 +3,14 @@ api/views.py
 Handling Requests from the frontend
 """
 
+import json
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Employee, MediaAsset
+from components.preprocessors import PreProcessor
+from components.postprocessors import PostProcessor
+from libs.strings import camel_to_snake
 from services.cache import CacheService
-from services.database import DatabaseService, Query
+from services.database import DatabaseService
 from services.rest import RestService
 
 
@@ -20,7 +24,7 @@ def view_manager(request):
     hash_key = RestService.hash_request(request)
     view = RestService.get_view(hash_key)
 
-    return view(request)
+    return view(request, hash_key)
 
 
 ###############################################################################
@@ -30,7 +34,7 @@ def view_manager(request):
 
 @csrf_exempt
 @RestService.register_view('get_token')
-def get_token(request):
+def get_token(request, hash_key=None):
     """
     View to handle GET requests for CSRF token
     """
@@ -38,14 +42,11 @@ def get_token(request):
 
 
 @RestService.register_view('GET')
-def get_view(request):
+def get_view(request, hash_key):
     """
     View to handle GET requests from the frontend
     """
     try:
-        # Set the request
-        hash_key = RestService.hash_request(request)
-
         # Get the requested records
         data = CacheService.get_object(hash_key)
         if not data:
@@ -68,25 +69,46 @@ def get_view(request):
 ###############################################################################
 
 
-@RestService.register_view('post_view')
-def post_view(request):
+@RestService.register_view('POST')
+def post_view(request, hash_key):
     """
     View to handle POST requests from the frontend
     """
     try:
         # Set the request
-        hash_key = RestService.hash_request(request)
         data = RestService.get_request_body(hash_key)
-        table_name = RestService.get_table_name(hash_key)
+        table_name = RestService.get_target_table(hash_key)
 
         # Create the record
         onitdb = DatabaseService.get_database()
-        table = onitdb.get_table(table_name)
-        data = table.create(data)
+        table = onitdb.get_table(camel_to_snake(table_name))
+
+        # Check processors
+        preprocessor_name = f"{table.model_name}:Create"
+        preprocessor = PreProcessor.get_processor(
+            implementation=preprocessor_name, table=table
+        )
+        if not preprocessor:
+            preprocessor_name = "Table:Create"
+
+        postprocessor_name = f"{table.model_name}:Create"
+        postprocessor = PostProcessor.get_processor(
+            implementation=postprocessor_name, table=table
+        )
+        if not postprocessor:
+            postprocessor_name = "Table:Create"
+
+        # Create the record
+        data = table.create(
+            json.loads(data),
+            pre_processor=preprocessor_name,
+            post_processor=postprocessor_name,
+            hash_key=hash_key
+        )
 
         return RestService.response(hash_key, data)
-    except ValueError as error:
-        return RestService.error_response(error)
+    except ValueError as err:
+        return RestService.error_response(error=err)
 
 
 ###############################################################################
@@ -94,7 +116,7 @@ def post_view(request):
 ###############################################################################
 
 
-def test_view(request):
+def test_view(request, hash_key=None):
     """
     View to handle test requests from the frontend
     """

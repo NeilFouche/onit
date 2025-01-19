@@ -148,6 +148,13 @@ class PageAdmin(admin.ModelAdmin):
     list_editable = ['title', 'path', 'parent', 'menu', 'active']
 
 
+@admin.register(models.Parameter)
+class ParameterAdmin(admin.ModelAdmin):
+    list_display = ['id', 'key', 'label', 'data_type', 'scope', 'category',
+                    'value']
+    list_editable = ['label', 'label', 'value']
+
+
 @admin.register(models.SocialPlatform)
 class SocialPlatformAdmin(admin.ModelAdmin):
     list_display = ['id', 'key', 'label', 'slug', 'url', 'active']

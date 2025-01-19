@@ -54,7 +54,7 @@ class TableExecutor(Manager):
                 implementation=pre_processor, table=self.table
             )
             if pre_processor:
-                pre_processor.process(query)
+                kwargs["data"] = pre_processor.process(data, hash_key)
 
         data = self.execute_action(**kwargs)
 
@@ -68,7 +68,7 @@ class TableExecutor(Manager):
                 implementation=post_processor, table=self.table
             )
             if post_processor:
-                data = post_processor.process(data)
+                data = post_processor.process(data, hash_key)
 
         return data
 
@@ -89,7 +89,7 @@ class CreateTableExecutor(TableExecutor):
         self.table = table
         super().__init__(table)
 
-    def execute_action(self, **kwargs):
+    def execute_action(self, data, **kwargs):
         """Method to execute"""
         try:
             if not self.table.data_model:
@@ -97,11 +97,11 @@ class CreateTableExecutor(TableExecutor):
                     f"Table {self.table.table_name} could not be resolved."
                 )
 
-            data = kwargs.get("data", {})
             new_instance = self.table.data_model.objects.create(**data)
             self.table.populate_fields(data)
+            data["id"] = new_instance.id
 
-            return new_instance
+            return data
         except ValueError as error:
             return error
 

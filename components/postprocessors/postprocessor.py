@@ -39,5 +39,5 @@ class PostProcessor(ABC):
         return PostProcessor.processor_implementations[implementation](table)
 
     @ abstractmethod
-    def process(self, data, hash_key):
+    def process(self, data, hash_key=None):
         """Method to process data"""

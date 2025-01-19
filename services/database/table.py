@@ -128,6 +128,7 @@ class MySQLTable(Table):
         self._foreign_keys = {}
         self.dependent_table = None
         self._querysets = {}
+        self._provisional_records = {}
 
         super().__init__(self.table_name)
 
@@ -135,7 +136,7 @@ class MySQLTable(Table):
     #                             PUBLIC METHODS                              #
     ###########################################################################
 
-    def create(self, item, processor="Table:Create", pre_processor=None, post_processor=None):
+    def create(self, item, hash_key=None, processor="Table:Create", pre_processor=None, post_processor=None):
         """
         Method to create an item in the table
 
@@ -146,6 +147,7 @@ class MySQLTable(Table):
             executor = TableExecutor.get_executor("Create")(self)
             return executor.execute(
                 data=item,
+                hash_key=hash_key,
                 processor=processor,
                 pre_processor=pre_processor,
                 post_processor=post_processor
@@ -273,6 +275,24 @@ class MySQLTable(Table):
             processor=processor,
             post_processor=post_processor
         )
+
+    def create_provisional_records(self, hash_key, data):
+        """
+        Method to create provisional records
+        """
+        self._provisional_records[hash_key] = data
+
+    def get_provisional_records(self, hash_key):
+        """
+        Returns the provisional records stored agianst the hash key
+        """
+        return self._provisional_records.get(hash_key)
+
+    def remove_provisional_records(self, hash_key):
+        """
+        Method to remove provisional records
+        """
+        self._provisional_records.pop(hash_key, None)
 
     def create_state(self, context="General"):
         """

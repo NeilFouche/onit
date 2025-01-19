@@ -148,13 +148,9 @@ class RestService():
         return decorator
 
     @staticmethod
-    def response(hash_key, data, error=None):
+    def response(hash_key, data):
         """Method to return a response"""
         try:
-            # Raise the error if it was triggered by previous processes, e.g. validation
-            if error:
-                raise ValueError(error)
-
             table = RestService.get_table_name(hash_key)
             message = RestService.get_message(data, table.title())
             entities = RestService.get_query_parmeters(hash_key)
@@ -163,7 +159,7 @@ class RestService():
                 "message": message,
                 "status": 200,
                 "table": table,
-                "results": len(data) if data else 0,
+                "results": len(data) if data and isinstance(data, list) else 0,
                 "size (bytes)": sys.getsizeof(data),
                 "query parameters": entities,
                 "data": data
