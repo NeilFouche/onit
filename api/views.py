@@ -16,6 +16,8 @@ from libs.strings import camel_to_snake
 from services.database import DatabaseService
 from services.rest import RestService
 
+logger = logging.getLogger("django")
+
 
 def view_manager(request):
     """
@@ -27,6 +29,7 @@ def view_manager(request):
     hash_key = RestService.hash_request(request)
     view = RestService.get_view(hash_key)
 
+    logger.debug("Calling view ==>")
     return view(request, hash_key)
 
 
@@ -51,17 +54,24 @@ def get_view(request, hash_key):
     """
     try:
         # Get the requested records
+        logger.debug("Checking cache ==>")
         data = cache.get(hash_key)
         if not data:
+            logger.debug("Using database ==>")
             onitdb = DatabaseService.get_database()
+
+            logger.debug("Fetching data ==>")
             data = onitdb.fetch_data(
                 target=RestService.get_target_table(hash_key),
                 source=RestService.get_starting_table(hash_key),
                 filter_params=RestService.get_query_parmeters(hash_key),
                 hash_key=hash_key
             )
+
+            logger.debug("Setting cache ==>")
             cache.set(hash_key, data)
 
+        logger.debug("Returning response ==>")
         return RestService.response(hash_key, data)
     except ValueError as e:
         return RestService.error_response(error=e)
@@ -121,7 +131,6 @@ def post_view(request, hash_key):
 
 def backend_test(request):
     hash_key = RestService.hash_request(request)
-    logger = logging.getLogger("django")
     logger.debug("Alright so here we are")
     return JsonResponse({"hash": hash_key})
 
