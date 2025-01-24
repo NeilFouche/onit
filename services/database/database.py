@@ -9,7 +9,7 @@ Databases:
 
 import json
 from django.apps import apps
-from django.core.cache import caches
+from django.core.cache import cache
 from django.db.models import QuerySet
 from django.db import connection
 from libs.algorithms import a_star
@@ -23,7 +23,6 @@ class DatabaseService():
     """Singleton class to handle database operations"""
 
     _instance = None
-    _default_cache = caches["default"]
 
     ###########################################################################
     #                        SINGLETON INITIALIZATION                         #
@@ -173,7 +172,7 @@ class DatabaseService():
         Retrieves the path from the cache if it exists, otherwise computes the shortest path
         between the two tables and caches it.
         """
-        path = DatabaseService._default_cache.get(
+        path = cache.get(
             f"QueryPath:{start_table}:{end_table}"
         )
 
@@ -183,7 +182,7 @@ class DatabaseService():
             if not schema_graph:
                 schema_graph = self._get_schema()
             path = a_star(schema_graph, start_table, end_table)
-            DatabaseService._default_cache.set(
+            cache.set(
                 f"QueryPath:{start_table}:{end_table}", json.dumps(path)
             )
 

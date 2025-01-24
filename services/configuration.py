@@ -10,7 +10,7 @@ Operations:
 """
 
 import json
-from django.core.cache import caches
+from django.core.cache import cache
 from services.database import DatabaseService
 
 
@@ -20,7 +20,6 @@ class ConfigurationService:
     """
 
     _parameters = {}
-    _default_cache = caches["default"]
 
     @staticmethod
     def cache_configuration():
@@ -40,7 +39,7 @@ class ConfigurationService:
             ConfigurationService._parameters[key] = value
 
             if key and value:
-                ConfigurationService._default_cache.set(key, json.dumps(value))
+                cache.set(key, json.dumps(value))
 
     @staticmethod
     def load_configuration():
@@ -70,7 +69,7 @@ class ConfigurationService:
         onitdb = DatabaseService.get_database()
         onitdb.parameter.add(parameter_data.to_dict)
 
-        return ConfigurationService._default_cache.add_item(
+        return cache.add_item(
             context="Parameter", parameter=parameter_data.key, value=parameter_data.value
         )
 
@@ -92,7 +91,7 @@ class ConfigurationService:
                 instance["value"] = value
                 onitdb.parameter.update(instance)
 
-            return ConfigurationService._default_cache.set_item(
+            return cache.set_item(
                 context="Parameter", parameter=namespaced_key, value=value
             )
 

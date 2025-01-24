@@ -10,7 +10,6 @@ from api.models import Employee, MediaAsset
 from components.preprocessors import PreProcessor
 from components.postprocessors import PostProcessor
 from libs.strings import camel_to_snake
-from services.cache import CacheService
 from services.database import DatabaseService
 from services.rest import RestService
 
@@ -49,7 +48,7 @@ def get_view(request, hash_key):
     """
     try:
         # Get the requested records
-        data = CacheService.get_object(hash_key)
+        data = cache.get_object(hash_key)
         if not data:
             onitdb = DatabaseService.get_database()
             data = onitdb.fetch_data(
@@ -58,7 +57,7 @@ def get_view(request, hash_key):
                 filter_params=RestService.get_query_parmeters(hash_key),
                 hash_key=hash_key
             )
-            CacheService.set_object(hash_key, data)
+            cache.set_object(hash_key, data)
 
         return RestService.response(hash_key, data)
     except ValueError as e:
@@ -145,7 +144,7 @@ def test_view(request, hash_key=None):
     # left set --v
     data = target.objects.filter(**filter_parameters)
 
-    CacheService.clear_cache()
-    CacheService.clear_object_cache()
+    cache.clear_cache()
+    cache.clear_object_cache()
 
     return RestService.response(list(data.values()))

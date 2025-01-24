@@ -45,4 +45,4 @@ class CacheService:
         """Method to print the cache info"""
         cache.print_info()
         print(
-            f"Used memory: {CacheService.object_cache.storage} ({CacheService.object_cache.storage_threshold})")
+            f"Used memory: {cache.object_cache.storage} ({cache.object_cache.storage_threshold})")
