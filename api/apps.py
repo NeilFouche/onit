@@ -4,7 +4,6 @@ This file is used to configure the app and load the configuration.
 
 import atexit
 from django.apps import AppConfig
-from libs.credentials_manager import get_secret
 from services.configuration import ConfigurationService
 from services.database.database import DatabaseService
 from services.scheduling import Scheduler, ObjectCacheCleanupTask
@@ -32,7 +31,7 @@ class ApiConfig(AppConfig):
         # Launch scheduler
         scheduler = Scheduler()
         scheduler.add_task(ObjectCacheCleanupTask({
-            "interval": int(get_secret("OBJECT_CACHE_CLEANUP_INTERVAL", default="3600"))
+            "interval": 3600
         }))
         scheduler.start()
 
