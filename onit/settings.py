@@ -85,6 +85,7 @@ APPEND_SLASH = False
 CACHES = {
     "default": {
         "BACKEND": "services.cache.object_cache.ObjectCache",
+        "TIMEOUT": 86400,
     }
 }
 
