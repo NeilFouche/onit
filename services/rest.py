@@ -68,10 +68,13 @@ class RestService():
         Returns:
             str: The hashed key.
         """
+        print("==> 1")
         hash_object = hashlib.md5(json.dumps(
             obj=request.get_full_path()).encode('utf-8')
         )
         hash_key = hash_object.hexdigest()
+
+        print(f"==> 2 ==> {hash_key}")
 
         if hash_key in RestService.requests:
             return hash_key

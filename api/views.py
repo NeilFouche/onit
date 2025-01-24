@@ -119,7 +119,9 @@ def post_view(request, hash_key):
 
 
 def backend_test(request):
-    return JsonResponse({"message": "Server is running"})
+    hash_key = RestService.hash_request(request)
+    print("Alright so here we are")
+    return JsonResponse({"hash": hash_key})
 
 
 def test_view(request, hash_key=None):
