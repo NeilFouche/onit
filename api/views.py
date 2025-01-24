@@ -4,6 +4,7 @@ Handling Requests from the frontend
 """
 
 import json
+from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Employee, MediaAsset
 from components.preprocessors import PreProcessor
@@ -68,7 +69,7 @@ def get_view(request, hash_key):
 #                                POST HANDLERS                                #
 ###############################################################################
 
-
+@transaction.atomic
 @RestService.register_view('POST')
 def post_view(request, hash_key):
     """
