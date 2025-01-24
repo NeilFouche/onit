@@ -6,6 +6,7 @@ from django.urls import path
 from api import views
 
 urlpatterns = [
+    path('backend-test/', views.backend_test, name='backend-test'),
     path('abc-testing/', views.test_view, name='abc-testing'),
     path('client/', views.view_manager, name='client-list'),
     path('employee/', views.view_manager, name='employee-list'),

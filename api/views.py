@@ -6,6 +6,7 @@ Handling Requests from the frontend
 import json
 import django.core.cache as cache
 from django.db import transaction
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Employee, MediaAsset
 from components.preprocessors import PreProcessor
@@ -115,6 +116,10 @@ def post_view(request, hash_key):
 ###############################################################################
 #                                  TEST VIEW                                  #
 ###############################################################################
+
+
+def backend_test(request):
+    return JsonResponse({"message": "Server is running"})
 
 
 def test_view(request, hash_key=None):
