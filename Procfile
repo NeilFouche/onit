@@ -1,1 +1,1 @@
-web: gunicorn onit.wsgi:application
+web: gunicorn --bind 0.0.0.0:8000 --pid /var/pids/web.pid onit.wsgi:application
