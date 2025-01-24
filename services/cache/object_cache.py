@@ -20,6 +20,7 @@ class ObjectCache(BaseCache):
         self._timeout = params.get("TIMEOUT", 86400)
         self.storage_threshold = None
 
+        params = params or {}
         super().__init__(params)
 
     def set(self, key, item):
