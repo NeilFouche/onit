@@ -43,9 +43,11 @@ jobs:
           EB_APPLICATION_NAME: ${{ secrets.EB_APP_NAME }}
           EB_ENVIRONMENT_NAME: ${{ secrets.EB_ENV_NAME }}
         run: |
+          set -x  # Enable debug logging
           eb init -p python-3.8 ${{ secrets.EB_APP_NAME }} --region ${{ secrets.AWS_REGION }}
           eb use ${{ secrets.EB_ENV_NAME }}
           eb deploy --staged
+          set +x  # Disable debug logging
 
       # Step 6: Verify the deployment
       - name: Verify the deployment
