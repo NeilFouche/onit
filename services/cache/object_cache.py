@@ -6,18 +6,21 @@ Handles caching for complex objects.
 
 import sys
 from time import time
+from django.core.cache.backends.base import BaseCache
 from services.configuration import ConfigurationService
 
 
-class ObjectCache:
+class ObjectCache(BaseCache):
     """Handles caching for complex objects"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, params, *args, **kwargs):
         self._cached_objects = {}
         self._object_metadata = {}
         self.storage = 0
         self._timeout = None
         self.storage_threshold = None
+
+        super().__init__(params)
 
     def update(self, key, item):
         """
