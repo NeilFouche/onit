@@ -17,7 +17,7 @@ class ObjectCache(BaseCache):
         self._cached_objects = {}
         self._object_metadata = {}
         self.storage = 0
-        self._timeout = params.get("TIMEOUT", 86400)
+        self._timeout = None
         self.storage_threshold = None
 
         params = params or {}
