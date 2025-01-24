@@ -85,7 +85,7 @@ APPEND_SLASH = False
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"127.0.0.1:6379/0"
+        "LOCATION": f"redis://127.0.0.1:6379/0"
     },
     "object_cache": {
         "BACKEND": "services.cache.object_cache.ObjectCache",
