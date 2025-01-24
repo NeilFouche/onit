@@ -13,7 +13,7 @@ from services.configuration import ConfigurationService
 class ObjectCache(BaseCache):
     """Handles caching for complex objects"""
 
-    def __init__(self, params=None):
+    def __init__(self, params=None, *args, **kwargs):
         self._cached_objects = {}
         self._object_metadata = {}
         self.storage = 0
