@@ -5,6 +5,7 @@ A task to be scheduled
 """
 
 from abc import ABC, abstractmethod
+from services.cache.cache import cache
 
 
 class Task(ABC):
@@ -38,7 +39,6 @@ class ObjectCacheCleanupTask(Task):
         Runs the clean-up activities for the cache
         """
         # Remove expired items
-        cache = cache.object_cache
         cache.remove_expired_items()
 
         # Remove oldest items if storage threshold is exceeded

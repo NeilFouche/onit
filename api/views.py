@@ -4,6 +4,7 @@ Handling Requests from the frontend
 """
 
 import json
+import django.core.cache as cache
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from api.models import Employee, MediaAsset
@@ -48,7 +49,7 @@ def get_view(request, hash_key):
     """
     try:
         # Get the requested records
-        data = cache.get_object(hash_key)
+        data = cache.get(hash_key)
         if not data:
             onitdb = DatabaseService.get_database()
             data = onitdb.fetch_data(
@@ -57,7 +58,7 @@ def get_view(request, hash_key):
                 filter_params=RestService.get_query_parmeters(hash_key),
                 hash_key=hash_key
             )
-            cache.set_object(hash_key, data)
+            cache.update(hash_key, data)
 
         return RestService.response(hash_key, data)
     except ValueError as e:
@@ -144,7 +145,6 @@ def test_view(request, hash_key=None):
     # left set --v
     data = target.objects.filter(**filter_parameters)
 
-    cache.clear_cache()
-    cache.clear_object_cache()
+    cache.clear()
 
     return RestService.response(list(data.values()))

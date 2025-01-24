@@ -182,7 +182,7 @@ class DatabaseService():
             if not schema_graph:
                 schema_graph = self._get_schema()
             path = a_star(schema_graph, start_table, end_table)
-            cache.set(
+            cache.update(
                 f"QueryPath:{start_table}:{end_table}", json.dumps(path)
             )
 
