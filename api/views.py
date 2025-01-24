@@ -4,6 +4,7 @@ Handling Requests from the frontend
 """
 
 import json
+import logging
 import django.core.cache as cache
 from django.db import transaction
 from django.http import JsonResponse
@@ -120,7 +121,8 @@ def post_view(request, hash_key):
 
 def backend_test(request):
     hash_key = RestService.hash_request(request)
-    print("Alright so here we are")
+    logger = logging.getLogger("django")
+    logger.debug("Alright so here we are")
     return JsonResponse({"hash": hash_key})
 
 

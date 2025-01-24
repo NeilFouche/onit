@@ -6,6 +6,7 @@ Handles REST API requests
 
 import json
 import hashlib
+import logging
 import sys
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -17,6 +18,7 @@ class RestService():
 
     requests = {}
     views = {}
+    logger = logging.getLogger("django")
 
     @staticmethod
     def remove_request(hash_key):
@@ -68,13 +70,13 @@ class RestService():
         Returns:
             str: The hashed key.
         """
-        print("==> 1")
+        RestService.logger.debug("==> 1")
         hash_object = hashlib.md5(json.dumps(
             obj=request.get_full_path()).encode('utf-8')
         )
         hash_key = hash_object.hexdigest()
 
-        print(f"==> 2 ==> {hash_key}")
+        RestService.logger(f"==> 2 ==> {hash_key}")
 
         if hash_key in RestService.requests:
             return hash_key

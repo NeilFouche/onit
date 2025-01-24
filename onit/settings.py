@@ -187,6 +187,29 @@ EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = "admin@onitafrica.com"
 
 ###############################################################################
+#                                Logging Settings                             #
+###############################################################################
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+###############################################################################
 #                             Debugging Settings                              #
 ###############################################################################
 
