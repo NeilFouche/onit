@@ -83,7 +83,7 @@ APPEND_SLASH = False
 ###############################################################################
 
 CACHES = {
-    "object_cache": {
+    "default": {
         "BACKEND": "services.cache.object_cache.ObjectCache",
     }
 }
