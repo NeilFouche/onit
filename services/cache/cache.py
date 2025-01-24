@@ -32,7 +32,7 @@ class CacheService:
             key (str): A hashed representation of the request.
             value (object): The object to cache.
         """
-        cache.update(key, item)
+        cache.set(key, item)
 
     @staticmethod
     def clear_object_cache():

@@ -39,7 +39,7 @@ class ConfigurationService:
             ConfigurationService._parameters[key] = value
 
             if key and value:
-                cache.update(key, value)
+                cache.set(key, value)
 
     @staticmethod
     def load_configuration():
@@ -69,7 +69,7 @@ class ConfigurationService:
         onitdb = DatabaseService.get_database()
         onitdb.parameter.add(parameter_data.to_dict)
 
-        return cache.update(
+        return cache.set(
             key=f"Parameter:{parameter_data.key}", value=parameter_data.value
         )
 
@@ -91,7 +91,7 @@ class ConfigurationService:
                 instance["value"] = value
                 onitdb.parameter.update(instance)
 
-            cache.update(
+            cache.set(
                 key=f"Parameter:{namespaced_key}", value=value
             )
 

@@ -58,7 +58,7 @@ def get_view(request, hash_key):
                 filter_params=RestService.get_query_parmeters(hash_key),
                 hash_key=hash_key
             )
-            cache.update(hash_key, data)
+            cache.set(hash_key, data)
 
         return RestService.response(hash_key, data)
     except ValueError as e:
