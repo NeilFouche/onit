@@ -5,7 +5,7 @@ Handling Requests from the frontend
 
 import json
 import logging
-import django.core.cache as cache
+from django.core.cache import cache
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
