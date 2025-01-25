@@ -23,7 +23,21 @@ class ObjectCache(BaseCache):
         params = params or {}
         super().__init__(params)
 
-    def set(self, key, item):
+    def add(self, key, value, timeout=None, version=None):
+        """
+        Adds an object to the cache.
+
+        Args:
+            key (str): A hashed representation of the request.
+            item (object): The object to be cached.
+        """
+        if key in self._cached_objects:
+            return False
+
+        self.set(key, value, timeout, version)
+        return True
+
+    def set(self, key, value, timeout=None, version=None):
         """
         Sets an object on the cache.
 
@@ -32,7 +46,7 @@ class ObjectCache(BaseCache):
             item (object): The object to be cached.
         """
         # Provision storage for the new item
-        item_size = sys.getsizeof(item)
+        item_size = sys.getsizeof(value)
 
         if not self.storage_threshold:
             self._refresh_configuration()
@@ -46,10 +60,10 @@ class ObjectCache(BaseCache):
             "expires_at": time() + self._timeout,
             "size": item_size,
         }
-        self._cached_objects[key] = item
-        self._update_storage(key, item)
+        self._cached_objects[key] = value
+        self._update_storage(key, value)
 
-    def get(self, key):
+    def get(self, key, default=None, version=None):
         """
         Gets an object from the cache.
 
@@ -69,7 +83,7 @@ class ObjectCache(BaseCache):
     def print_info(self):
         print(f"Number of cached objects: {len(self._cached_objects)}")
 
-    def delete(self, key):
+    def delete(self, key, version=None):
         """
         Deletes an object from the cache.
 
@@ -133,3 +147,9 @@ class ObjectCache(BaseCache):
         self.storage_threshold = int(ConfigurationService.get_parameter(
             category="Cache", key="ObjectCacheStorageThreshold"
         ) or '52428800')
+
+    def get_many(self, keys, version=None):
+        return super().get_many(keys, version)
+
+    def set_many(self, data, timeout=None, version=None):
+        return super().set_many(data, timeout, version)

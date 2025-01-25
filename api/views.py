@@ -54,7 +54,7 @@ def get_view(request, hash_key):
     """
     try:
         # Get the requested records
-        logger.debug("Checking cache ==>")
+        logger.debug(f"Checking cache ==> {hash_key}")
         data = cache.get(hash_key)
         if not data:
             logger.debug("Using database ==>")
