@@ -23,7 +23,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "13.245.240.88",
-    "0.0.0.0"
+    "0.0.0.0",
+    "main.d2aw166h87kmvv.amplifyapp.com/"
 ]
 
 ###############################################################################
@@ -155,6 +156,7 @@ STATIC_ROOT = BASE_DIR / "static"
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://main.d2aw166h87kmvv.amplifyapp.com/",
     'http://localhost:3001',
     'http://www.onitafrica.com',
     'http://localhost:8000'
@@ -167,6 +169,7 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://main.d2aw166h87kmvv.amplifyapp.com/",
     'http://localhost:3001',
     'http://www.onitafrica.com',
     'http://localhost'
