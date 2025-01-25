@@ -18,6 +18,7 @@ DEBUG = False
 # List of domains that are allowed to make requests to this application
 ALLOWED_HOSTS = [
     "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "api.onitafrica.com",
     "www.onitafrica.com",
     "onitafrica.com",
     "localhost",
