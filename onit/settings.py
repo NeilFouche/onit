@@ -156,10 +156,10 @@ STATIC_ROOT = BASE_DIR / "static"
 # Content Origin Resource Sharing (CORS) settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
     "https://main.d2aw166h87kmvv.amplifyapp.com/",
-    'http://localhost:3001',
     'http://www.onitafrica.com',
+    'http://localhost:3001',
     'http://localhost:8000'
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -169,10 +169,10 @@ CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
-    "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
-    "https://main.d2aw166h87kmvv.amplifyapp.com/",
+    "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://main.d2aw166h87kmvv.amplifyapp.com",
+    'https://www.onitafrica.com',
     'http://localhost:3001',
-    'http://www.onitafrica.com',
     'http://localhost'
 ]
 
