@@ -75,6 +75,10 @@ ROOT_URLCONF = "onit.urls"
 # Web Server Gateway Interface (WSGI) application
 WSGI_APPLICATION = "onit.wsgi.application"
 
+# Elastic Beanstalk Load Balancer proxy
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 ###############################################################################
 #                              API / Routing Settings                         #
 ###############################################################################
