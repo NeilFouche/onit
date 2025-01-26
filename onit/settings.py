@@ -18,14 +18,13 @@ DEBUG = False
 # List of domains that are allowed to make requests to this application
 ALLOWED_HOSTS = [
     "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "main.d2aw166h87kmvv.amplifyapp.com"
     "api.onitafrica.com",
     "www.onitafrica.com",
+    "13.245.253.121",  # Dedicated EC2 instance IPv4 address
     "onitafrica.com",
     "localhost",
-    "127.0.0.1",
-    "13.245.240.88",
-    "0.0.0.0",
-    "main.d2aw166h87kmvv.amplifyapp.com"
+    "127.0.0.1"
 ]
 
 ###############################################################################
@@ -186,6 +185,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_TRUSTED_ORIGINS = [
     "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://api.onitafrica.com",
     "https://main.d2aw166h87kmvv.amplifyapp.com",
     'https://www.onitafrica.com',
     'http://localhost:3001',
