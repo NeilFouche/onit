@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.shortcuts import redirect
 from api.models import Employee, MediaAsset
 from components.preprocessors import PreProcessor
 from components.postprocessors import PostProcessor
@@ -124,6 +125,18 @@ def post_view(request, hash_key):
         return RestService.response(hash_key, data)
     except ValueError as err:
         return RestService.error_response(error=err)
+
+
+###############################################################################
+#                                LANDING VIEW                                 #
+###############################################################################
+
+
+def index(request):
+    """
+    View to handle requests to the root URL
+    """
+    return redirect("https://main.d2aw166h87kmvv.amplifyapp.com/")
 
 
 ###############################################################################
