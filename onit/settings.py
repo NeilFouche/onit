@@ -162,6 +162,21 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3001',
     'http://localhost:8000'
 ]
+
+CORS_ALLOW_HEADERS = [
+    'Content-Type',
+    'X-CSRFToken',
+    'Authorization',
+    'Cookie'
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'OPTIONS',
+    'PUT',
+    'DELETE',
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Cross-Site Request Forgery (CSRF) settings
