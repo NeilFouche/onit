@@ -168,6 +168,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'None'
 CSRF_TRUSTED_ORIGINS = [
     "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
     "https://main.d2aw166h87kmvv.amplifyapp.com",
@@ -176,7 +177,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost'
 ]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 
 ###############################################################################
