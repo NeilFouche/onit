@@ -23,13 +23,11 @@ ALLOWED_HOSTS = [
     "api.onitafrica.com",
     "www.onitafrica.com",
     "13.245.253.121",  # Dedicated EC2 instance public IPv4 address
+    "172.31.16.204",  # EC2 instance private IPv4 address
     "onitafrica.com",
     "localhost",
     "127.0.0.1"
 ]
-
-# Elastic Beanstalk Load Balancer proxy
-USE_X_FORWARDED_HOST = True
 
 ###############################################################################
 #                            Application Defintion                            #
@@ -48,7 +46,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'onit.middleware.DynamicAllowedHostsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
