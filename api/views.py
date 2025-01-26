@@ -8,7 +8,7 @@ import logging
 from django.core.cache import cache
 from django.db import transaction
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from api.models import Employee, MediaAsset
 from components.preprocessors import PreProcessor
 from components.postprocessors import PostProcessor
@@ -19,6 +19,7 @@ from services.rest import RestService
 logger = logging.getLogger("django")
 
 
+@ensure_csrf_cookie
 def view_manager(request):
     """
     View to manage requests from the frontend
@@ -80,6 +81,7 @@ def get_view(request, hash_key):
 ###############################################################################
 #                                POST HANDLERS                                #
 ###############################################################################
+
 
 @transaction.atomic
 @RestService.register_view('POST')
