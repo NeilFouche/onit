@@ -6,6 +6,7 @@ Django 5.1.2
 from pathlib import Path
 from libs.credentials_manager import get_secret
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,11 +22,14 @@ ALLOWED_HOSTS = [
     "main.d2aw166h87kmvv.amplifyapp.com"
     "api.onitafrica.com",
     "www.onitafrica.com",
-    "13.245.253.121",  # Dedicated EC2 instance IPv4 address
+    "13.245.253.121",  # Dedicated EC2 instance public IPv4 address
     "onitafrica.com",
     "localhost",
     "127.0.0.1"
 ]
+
+# Elastic Beanstalk Load Balancer proxy
+USE_X_FORWARDED_HOST = True
 
 ###############################################################################
 #                            Application Defintion                            #
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'onit.middleware.DynamicAllowedHostsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -74,10 +79,6 @@ ROOT_URLCONF = "onit.urls"
 
 # Web Server Gateway Interface (WSGI) application
 WSGI_APPLICATION = "onit.wsgi.application"
-
-# Elastic Beanstalk Load Balancer proxy
-USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ###############################################################################
 #                              API / Routing Settings                         #
