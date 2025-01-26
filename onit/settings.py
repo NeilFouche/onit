@@ -167,17 +167,23 @@ CORS_ALLOW_CREDENTIALS = True
 # Cross-Site Request Forgery (CSRF) settings
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'None'
 CSRF_TRUSTED_ORIGINS = [
-    "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
-    "https://main.d2aw166h87kmvv.amplifyapp.com/",
+    "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "https://main.d2aw166h87kmvv.amplifyapp.com",
+    'https://www.onitafrica.com',
     'http://localhost:3001',
-    'http://www.onitafrica.com',
     'http://localhost'
 ]
+CORS_ORIGIN_WHITELIST = [
+    "https://main.d2aw166h87kmvv.amplifyapp.com/",
+]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
+
+SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = False
 
 ###############################################################################
 #                                Email Settings                               #
