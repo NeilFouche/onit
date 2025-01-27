@@ -18,12 +18,12 @@ DEBUG = False
 
 # List of domains that are allowed to make requests to this application
 ALLOWED_HOSTS = [
-    "onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "onitweb.af-south-1.elasticbeanstalk.com",
     "main.d2aw166h87kmvv.amplifyapp.com"
     "api.onitafrica.com",
     "www.onitafrica.com",
-    "13.245.253.121",  # Dedicated EC2 instance public IPv4 address
-    "172.31.31.138",  # EC2 instance private IPv4 address
+    "13.247.63.128",  # Dedicated EC2 instance public IPv4 address
+    "172.31.33.227",  # EC2 instance private IPv4 address
     "onitafrica.com",
     "localhost",
     "127.0.0.1",
@@ -158,8 +158,9 @@ STATIC_ROOT = BASE_DIR / "static"
 # Content Origin Resource Sharing (CORS) settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "onitweb.af-south-1.elasticbeanstalk.com",
     "https://main.d2aw166h87kmvv.amplifyapp.com/",
+    'https://www.onitafrica.com',
     'http://www.onitafrica.com',
     'http://localhost:3001',
     'http://localhost:8000'
@@ -172,10 +173,11 @@ CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
-    "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
+    "onitweb.af-south-1.elasticbeanstalk.com",
     "https://api.onitafrica.com",
     "https://main.d2aw166h87kmvv.amplifyapp.com",
     'https://www.onitafrica.com',
+    'http://www.onitafrica.com',
     'http://localhost:3001',
     'http://localhost'
 ]
