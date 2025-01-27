@@ -23,7 +23,7 @@ ALLOWED_HOSTS = [
     "api.onitafrica.com",
     "www.onitafrica.com",
     "13.247.63.128",  # Dedicated EC2 instance public IPv4 address
-    "172.31.33.227",  # EC2 instance private IPv4 address
+    "172.31.4.29",  # EC2 instance private IPv4 address
     "onitafrica.com",
     "localhost",
     "127.0.0.1",
