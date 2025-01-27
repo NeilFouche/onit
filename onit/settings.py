@@ -165,27 +165,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000'
 ]
 
-CORS_ALLOW_HEADERS = [
-    'Content-Type',
-    'X-CSRFToken',
-    'Authorization',
-    'Cookie'
-]
-
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'OPTIONS',
-    'PUT',
-    'DELETE',
-]
 CORS_ALLOW_CREDENTIALS = True
 
 # Cross-Site Request Forgery (CSRF) settings
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "https://onitafrica-pnv.af-south-1.elasticbeanstalk.com",
     "https://api.onitafrica.com",
@@ -195,7 +180,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost'
 ]
 
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = True
 
 ###############################################################################
