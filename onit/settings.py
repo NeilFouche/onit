@@ -170,7 +170,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Cross-Site Request Forgery (CSRF) settings
 # Allow CSRF cookies to be shared across subdomains
-CSRF_COOKIE_DOMAIN = '.onitafrica.com'
+CSRF_COOKIE_DOMAIN = 'api.onitafrica.com'
 CSRF_COOKIE_PATH = '/'  # Ensure the cookie is available for the entire domain
 CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
 CSRF_COOKIE_SECURE = True
