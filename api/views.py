@@ -91,6 +91,8 @@ def post_view(request, hash_key):
     View to handle POST requests from the frontend
     """
     try:
+        logger.info(f"Received cookies: {request.COOKIES}")
+
         # Set the request
         data = RestService.get_request_body(hash_key)
         table_name = RestService.get_target_table(hash_key)
