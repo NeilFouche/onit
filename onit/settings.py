@@ -176,7 +176,7 @@ CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
 CSRF_COOKIE_SECURE = True
 
 CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     "http://onitwebenv.af-south-1.elasticbeanstalk.com",
     "https://api.onitafrica.com",
@@ -188,7 +188,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost'
 ]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 
 ###############################################################################
