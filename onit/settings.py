@@ -175,7 +175,7 @@ CSRF_COOKIE_PATH = '/'  # Ensure the cookie is available for the entire domain
 CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
 CSRF_COOKIE_SECURE = True
 
-CSRF_USE_SESSIONS = False
+CSRF_USE_SESSIONS = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     "http://onitwebenv.af-south-1.elasticbeanstalk.com",
