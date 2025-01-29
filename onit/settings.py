@@ -20,6 +20,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "onitwebenv.af-south-1.elasticbeanstalk.com",
     "client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
+    "awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
     "api.onitafrica.com",
     "www.onitafrica.com",
     "13.247.63.128",  # Dedicated EC2 instance public IPv4 address
@@ -160,6 +161,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://onitwebenv.af-south-1.elasticbeanstalk.com",
     "https://client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
+    "https://awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
     "https://13.247.63.128",  # Dedicated EC2 instance public IPv4 address
     "https://172.31.43.185",  # EC2 instance private IPv4 address
     'https://www.onitafrica.com',
@@ -183,7 +185,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://onitwebenv.af-south-1.elasticbeanstalk.com",
     "https://api.onitafrica.com",
     "https://client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
-    "https://main.d2aw166h87kmvv.amplifyapp.com",
+    "https://awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
     'https://www.onitafrica.com',
     'http://www.onitafrica.com',
     'http://localhost:3001',
