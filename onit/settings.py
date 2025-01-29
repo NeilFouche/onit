@@ -169,8 +169,13 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Cross-Site Request Forgery (CSRF) settings
-CSRF_USE_SESSIONS = False
+# Allow CSRF cookies to be shared across subdomains
+CSRF_COOKIE_DOMAIN = '.onitafrica.com'
+CSRF_COOKIE_PATH = '/'  # Ensure the cookie is available for the entire domain
+CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
 CSRF_COOKIE_SECURE = True
+
+CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "http://onitwebenv.af-south-1.elasticbeanstalk.com",
