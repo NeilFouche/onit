@@ -8,7 +8,7 @@ from api import views
 urlpatterns = [
     path('health/', views.health_check, name='health-check'),
     path('backend-test/', views.backend_test, name='backend-test'),
-    path('clear-cache/', views.backend_test, name='clear-cache'),
+    path('clear-cache/', views.clear_cache, name='clear-cache'),
     path('abc-testing/', views.test_view, name='abc-testing'),
     path('client/', views.view_manager, name='client-list'),
     path('employee/', views.view_manager, name='employee-list'),
