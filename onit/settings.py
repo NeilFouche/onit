@@ -172,6 +172,9 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Cross-Site Request Forgery (CSRF) settings
 # Allow CSRF cookies to be shared across subdomains
 CSRF_COOKIE_DOMAIN = 'api.onitafrica.com'
