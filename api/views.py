@@ -31,7 +31,6 @@ def view_manager(request):
     hash_key = RestService.hash_request(request)
     view = RestService.get_view(hash_key)
 
-    logger.debug("Calling view ==>")
     return view(request, hash_key)
 
 
@@ -56,13 +55,10 @@ def get_view(request, hash_key):
     """
     try:
         # Get the requested records
-        logger.debug(f"Checking cache ==> {type(cache)}")
         data = cache.get(hash_key)
         if not data:
-            logger.debug("Using database ==>")
             onitdb = DatabaseService.get_database()
 
-            logger.debug("Fetching data ==>")
             data = onitdb.fetch_data(
                 target=RestService.get_target_table(hash_key),
                 source=RestService.get_starting_table(hash_key),
@@ -70,10 +66,8 @@ def get_view(request, hash_key):
                 hash_key=hash_key
             )
 
-            logger.debug("Setting cache ==>")
             cache.set(hash_key, data)
 
-        logger.debug("Returning response ==>")
         return RestService.response(hash_key, data)
     except ValueError as e:
         return RestService.error_response(error=e)
@@ -173,7 +167,6 @@ def clear_cache(request):
 
 def backend_test(request):
     hash_key = RestService.hash_request(request)
-    logger.debug("Alright so here we are")
     return JsonResponse({"hash": hash_key})
 
 
