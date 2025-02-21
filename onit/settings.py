@@ -31,6 +31,8 @@ ALLOWED_HOSTS = [
     "0.0.0.0"
 ]
 
+ADMIN = [("Neil", "neil@onitafrica.com")]
+
 ###############################################################################
 #                            Application Defintion                            #
 ###############################################################################
@@ -84,6 +86,7 @@ WSGI_APPLICATION = "onit.wsgi.application"
 ###############################################################################
 
 APPEND_SLASH = False
+SECURE_SSL_REDIRECT = True
 
 ###############################################################################
 #                               Cache Settings                                #
@@ -176,7 +179,6 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Cross-Site Request Forgery (CSRF) settings
-# Allow CSRF cookies to be shared across subdomains
 CSRF_COOKIE_DOMAIN = '.onitafrica.com'
 CSRF_COOKIE_PATH = '/'  # Ensure the cookie is available for the entire domain
 CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies

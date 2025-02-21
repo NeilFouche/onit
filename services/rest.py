@@ -70,13 +70,10 @@ class RestService():
         Returns:
             str: The hashed key.
         """
-        RestService.logger.debug("==> 1")
         hash_object = hashlib.md5(json.dumps(
             obj=request.get_full_path()).encode('utf-8')
         )
         hash_key = hash_object.hexdigest()
-
-        RestService.logger.debug(f"==> 2 ==> {hash_key}")
 
         if hash_key in RestService.requests:
             return hash_key
@@ -134,11 +131,8 @@ class RestService():
     @staticmethod
     def get_view(hash_key):
         """Method to get the view"""
-        RestService.logger.debug("Checking token endpoint ==>")
         if RestService._is_token_endpoint(hash_key):
             return RestService.views['get_token']
-
-        RestService.logger.debug("Setting request ==>")
 
         request = RestService.requests.get(hash_key)
 
