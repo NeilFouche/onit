@@ -3,29 +3,34 @@ Django settings for onit project.
 Django 5.1.2
 """
 
+import dj_database_url
+from sys import argv
 from pathlib import Path
+
 from libs.credentials_manager import get_secret
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Env - Production / development
+if any(cmd in argv for cmd in ['runserver', 'shell', 'makemigrations', 'migrate']):
+  ENV = "development"
+else:
+  ENV = "production"
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret("DJANGO_SECRET_KEY")
+SECRET_KEY = get_secret("DJANGO_SECRET_KEY", ENV)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # List of domains that are allowed to make requests to this application
 ALLOWED_HOSTS = [
-    "onitwebenv.af-south-1.elasticbeanstalk.com",
-    "client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
-    "awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
     "api.onitafrica.com",
     "www.onitafrica.com",
-    "13.247.63.128",  # Dedicated EC2 instance public IPv4 address
-    "172.31.43.185",  # EC2 instance private IPv4 address
     "onitafrica.com",
+    "onit.production.up.railway.app"
     "localhost",
     "127.0.0.1",
     "0.0.0.0"
@@ -43,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     'api',
     "django_extensions",
@@ -52,6 +58,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -86,7 +93,7 @@ WSGI_APPLICATION = "onit.wsgi.application"
 ###############################################################################
 
 APPEND_SLASH = False
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 ###############################################################################
 #                               Cache Settings                                #
@@ -102,17 +109,24 @@ CACHES = {
 #                              Database Settings                              #
 ###############################################################################
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "onitdb",
-        "HOST": "onit-db.c9ioyyeaczda.af-south-1.rds.amazonaws.com",
-        'PORT': 3306,
-        "USER": get_secret('DATABASE_USER'),
-        "PASSWORD": get_secret("DATABASE_PASSWORD"),
-        "ATOMIC_REQUESTS": False,
+if ENV == 'production':
+    DATABASES = {
+       'default': dj_database_url.config(
+          conn_max_age=600,
+          conn_health_checks=True
+       )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": get_secret("DATABASE_NAME", ENV),
+            "HOST": get_secret("DATABASE_ENDPOINT", ENV),
+            'PORT': get_secret("PORT", ENV),
+            "USER": get_secret("DATABASE_USER", ENV),
+            "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+        }
+    }
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -152,8 +166,14 @@ USE_TZ = True
 #                            Static Files Settings                            #
 ###############################################################################
 
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 ###############################################################################
 #                               Content Sharing                               #
@@ -162,79 +182,36 @@ STATIC_ROOT = BASE_DIR / "static"
 # Content Origin Resource Sharing (CORS) settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "http://onitwebenv.af-south-1.elasticbeanstalk.com",
-    "https://client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
-    "https://awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
-    "https://13.247.63.128",  # Dedicated EC2 instance public IPv4 address
-    "https://172.31.43.185",  # EC2 instance private IPv4 address
     'https://www.onitafrica.com',
     'http://www.onitafrica.com',
+    "onit.production.up.railway.app"
     'http://localhost:3001',
     'http://localhost:8000'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Cross-Site Request Forgery (CSRF) settings
 CSRF_COOKIE_DOMAIN = '.onitafrica.com'
-CSRF_COOKIE_PATH = '/'  # Ensure the cookie is available for the entire domain
-CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
+CSRF_COOKIE_PATH = '/'
+CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = True
 
 CSRF_USE_SESSIONS = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
-    "http://onitwebenv.af-south-1.elasticbeanstalk.com",
-    "https://api.onitafrica.com",
-    "https://client-side-rendering.d2aw166h87kmvv.amplifyapp.com",
-    "https://awseb--AWSEB-sBg5cgfci7W2-340403194.af-south-1.elb.amazonaws.com",
-    'https://www.onitafrica.com',
-    'http://www.onitafrica.com',
+    'https://*.onitafrica.com',
+    'https://*.railway.app',
+    "onit.production.up.railway.app"
     'http://localhost:3001',
-    'http://localhost'
+    'http://localhost:8000'
 ]
 
-SESSION_COOKIE_SAMESITE = 'None'
+# Session settings
+SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = True
-
-###############################################################################
-#                                Email Settings                               #
-###############################################################################
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = "smtp.mail.us-east-1.awsapps.com"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = "admin@onitafrica.com"
-EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = "admin@onitafrica.com"
-
-###############################################################################
-#                                Logging Settings                             #
-###############################################################################
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
 
 ###############################################################################
 #                             Debugging Settings                              #

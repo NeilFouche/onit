@@ -8,25 +8,25 @@ import json
 import hashlib
 import logging
 import sys
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.middleware.csrf import get_token
-from libs.strings import camel_to_snake, kebab_to_camel
 
 
 class RestService():
     """Handles REST API requests"""
 
-    requests = {}
+    requests: dict[str, HttpRequest] = {}
     views = {}
     logger = logging.getLogger("django")
+    control_parameters = []
 
     @staticmethod
-    def remove_request(hash_key):
+    def remove_request(request_key: str):
         """Method to remove a request"""
-        RestService.requests.pop(hash_key, None)
+        RestService.requests.pop(request_key, None)
 
     @staticmethod
-    def error_response(error, status=400):
+    def error_response(error, status: int = 400):
         """Method to return an error response"""
         return JsonResponse({
             'success': False,
@@ -34,33 +34,55 @@ class RestService():
         }, status=status)
 
     @staticmethod
-    def extract_context(request):
-        """Method to extract the context"""
-        path = request.path.rstrip('/')
-        path_parts = path.split('/')
-        return path_parts[-1] if len(path_parts) > 2 else None
+    def get_context(request_key: str):
+        """Gets the endpoint_context from the request path"""
+        request = RestService.requests.get(request_key)
+        if not request:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        return request.GET.get('with_context')
 
     @staticmethod
-    def get_token(request):
+    def get_token(request: HttpRequest):
         """Method to get the CSRF token"""
         return JsonResponse({'csrf_token': get_token(request)})
 
     @staticmethod
-    def get_endpoint(hash_key):
+    def get_endpoint(request_key: str) -> str:
         """Method to get the endpoint"""
-        request = RestService.requests.get(hash_key)
-        path = request.path.rstrip('/')
-        path_parts = path.split('/')
-        return path_parts[2]
+        request = RestService.requests.get(request_key)
+        if request is None:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        return request.path.strip('/')
 
     @staticmethod
-    def get_context(hash_key):
-        """Method to get context if provided"""
-        request = RestService.requests.get(hash_key)
-        return RestService.extract_context(request)
+    def get_command(request_key: str) -> str:
+        """Gets the command of the request. Command is always the first item in the """
+        request = RestService.requests.get(request_key)
+        if not request:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        # Return the first query parameter which is the command by design
+        return next(iter(request.GET))
 
     @staticmethod
-    def hash_request(request):
+    def get_command_target(request_key: str):
+        request = RestService.requests.get(request_key)
+        if not request:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        command = RestService.get_command(request_key)
+        return request.GET[command]
+
+    @staticmethod
+    def get_control_parameters():
+        config_path = "data/api_specifications/control_parameters.json"
+        with open(config_path, 'r') as file:
+            RestService.control_parameters = json.load(file)
+
+    @staticmethod
+    def hash_request(request: HttpRequest):
         """
         Method to get the hash
 
@@ -73,68 +95,55 @@ class RestService():
         hash_object = hashlib.md5(json.dumps(
             obj=request.get_full_path()).encode('utf-8')
         )
-        hash_key = hash_object.hexdigest()
+        request_key = hash_object.hexdigest()
 
-        if hash_key in RestService.requests:
-            return hash_key
+        if request_key in RestService.requests:
+            return request_key
 
-        RestService.requests[hash_key] = request
+        RestService.requests[request_key] = request
 
-        return hash_key
-
-    @staticmethod
-    def get_message(data, table_name):
-        """Method to get the message"""
-        return "No records found" if not data else f"{table_name} records retrieved succesfully"
+        return request_key
 
     @staticmethod
-    def get_query_parmeters(hash_key):
+    def get_query_parmeters(request_key: str):
         """Method to get the query parameters"""
-        request = RestService.requests.get(hash_key)
+        request = RestService.requests.get(request_key)
+        if request is None:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        command = RestService.get_command(request_key)
         return {
             key: value
-            for key, value in request.GET.items() if key != 'table'
+            for key, value in request.GET.items() if key not in [command, *RestService.control_parameters]
         }
 
     @staticmethod
-    def get_request_body(hash_key):
+    def get_request(request_key: str) -> HttpRequest:
+        """Returns a specific request"""
+        request = RestService.requests.get(request_key)
+        if request is None:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
+        return RestService.requests[request_key]
+
+    @staticmethod
+    def get_request_body(request_key: str):
         """Method to get the request body"""
-        request = RestService.requests.get(hash_key)
+        request = RestService.requests.get(request_key)
+        if request is None:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
+
         return request.body.decode('utf-8')
 
     @staticmethod
-    def get_starting_table(hash_key):
-        """Method to get the starting table"""
-        return RestService._get_table_parameter(hash_key)
-
-    @staticmethod
-    def get_target_table(hash_key):
-        """Method to get the target table"""
-        return kebab_to_camel(RestService.get_endpoint(hash_key))
-
-    @staticmethod
-    def get_table_name(hash_key):
-        """
-        Method to get the table name
-
-        Note: If the table name is not provided as a query parameter, use the endpoint.
-
-        Returns:
-            str: The table name converted to snake_case.
-        """
-        table_name = RestService._get_table_parameter(hash_key)
-        if not table_name:
-            table_name = RestService.get_endpoint(hash_key)
-
-        return camel_to_snake(table_name)
-
-    @staticmethod
-    def get_view(hash_key):
+    def get_view(request_key: str):
         """Method to get the view"""
-        if RestService._is_token_endpoint(hash_key):
-            return RestService.views['get_token']
+        if RestService._is_token_endpoint(request_key):
+            return RestService.views['TOKEN:CSRF']
 
-        request = RestService.requests.get(hash_key)
+        request = RestService.requests.get(request_key)
+        if request is None:
+            raise ValueError("Unknown request. See docs for supported endpoints.")
 
         return RestService.views[request.method]
 
@@ -150,46 +159,22 @@ class RestService():
         return decorator
 
     @staticmethod
-    def response(hash_key, data):
+    def response(request_key, data):
         """Method to return a response"""
-        try:
-            table = RestService.get_table_name(hash_key)
-            message = RestService.get_message(data, table.title())
-            entities = RestService.get_query_parmeters(hash_key)
+        endpoint = RestService.get_endpoint(request_key)
+        entities = RestService.get_query_parmeters(request_key)
 
-            return JsonResponse({
-                "message": message,
-                "status": 200,
-                "table": table,
-                "results": len(data) if data and isinstance(data, list) else 0,
-                "size (bytes)": sys.getsizeof(data),
-                "query parameters": entities,
-                "data": data
-            })
-        except ValueError as e:
-            return JsonResponse({
-                "status": 400,
-                "message": f"Request failed: {e}"
-            })
+        return JsonResponse({
+            "message": f"{endpoint.title()} request processed succesfully",
+            "status": 200,
+            "endpoint": endpoint,
+            "results": len(data) if data and isinstance(data, list) else 0,
+            "size (bytes)": sys.getsizeof(data),
+            "query parameters": entities,
+            "data": data
+        })
 
     @staticmethod
-    def _get_table_parameter(hash_key):
-        """Method to get the table"""
-        request = RestService.requests.get(hash_key)
-        return request.GET.get('table', None)
-
-    @staticmethod
-    def _is_token_endpoint(hash_key):
+    def _is_token_endpoint(request_key: str):
         """Method to determine if the endpoint is a token endpoint"""
-        return RestService.get_endpoint(hash_key) == 'get-csrf-token'
-
-    @staticmethod
-    def _query_requires_join(hash_key):
-        """Method to determine if a deep join is required"""
-        endpoint = RestService.get_endpoint(hash_key)
-        table_name = RestService._get_table_parameter(hash_key)
-
-        if table_name:
-            table_name = table_name.lower()
-
-        return table_name and table_name != endpoint
+        return RestService.get_endpoint(request_key) == 'get-csrf-token'

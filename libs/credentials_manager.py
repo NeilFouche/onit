@@ -2,36 +2,41 @@
 A library to manage the retrieval of credentials
 """
 
-import json
-import boto3
-from botocore.exceptions import ClientError
+import os
+from dotenv import load_dotenv
 
 
-def get_secret(secret_name, region="af-south-1", default=None):
+def get_secret(secret_name: str, env: str = "production") -> str:
     """
-    Retrieve a secret from AWS Secrets Manager
+    Returns the specified secret based on the environment.
 
-    :param secret_name: The name of the secret to retrieve
-    :param region: The region in which the secret is stored
-    :return: The secret value
+    During development use the .env for dev values, but use env variables in
+    production env. Most hosting providers use standard env ecosystem to manage
+    secret values, so the default way to get the secret is reading it from the
+    env with os.
     """
 
-    # Create a Secrets Manager client
-    session = boto3.session.Session()
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region
-    )
+    source = 'file' if env == 'development' else 'env'
 
-    try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
-    except ClientError as e:
-        raise e
+    if source == 'file':
+        return get_file_variable(secret_name, env)
 
-    secret = get_secret_value_response.get('SecretString', None)
-    if secret is None:
-        return default
+    return get_env_secret(secret_name)
 
-    return json.loads(secret).get(secret_name, default)
+def get_env_secret(secret_name: str, source: str = "railway"):
+    """
+    Gets the secret value from the source (host) secret variable API
+    """
+
+    return os.environ.get(secret_name, "")
+
+def get_file_variable(variable, env) -> str:
+    """
+    Returns the specified variable value.
+    """
+    if env not in ["production", "development"]:
+        env = "production"
+
+    load_dotenv(f'.env.{env}', override=True)
+
+    return os.getenv(variable, "")

@@ -9,8 +9,9 @@ Operations:
     - update_parameter
 """
 
-import json
+import csv
 from django.core.cache import cache
+from libs.strings import format_value
 from services.database import DatabaseService
 
 
@@ -46,12 +47,18 @@ class ConfigurationService:
         """
         Method to load the configuration
         """
-        ConfigurationService._parameters = ConfigurationService.get_parameter(
-            category="Configuration", key="AppConfig"
-        ) or {}
-
         if not ConfigurationService._parameters:
-            ConfigurationService.cache_configuration()
+            # import config
+            config_path = "config/parameters.csv"
+            with open(config_path, 'r', newline='', encoding='utf-8') as file:
+                csv_reader = csv.reader(file)
+                _ = next(csv_reader)
+
+                for row in csv_reader:
+                    key, value, dtype = row[1], row[5], row[7]
+                    ConfigurationService._parameters[key] = format_value(value, dtype)
+                    if key and ConfigurationService._parameters[key]:
+                        cache.set(key, value)
 
     @staticmethod
     def get_parameter(category, key, scope="Global"):
@@ -67,7 +74,7 @@ class ConfigurationService:
         Method to add a parameter
         """
         onitdb = DatabaseService.get_database()
-        onitdb.parameter.add(parameter_data.to_dict)
+        onitdb.parameter.create(parameter_data.to_dict)
 
         return cache.set(
             key=f"Parameter:{parameter_data.key}", value=parameter_data.value
@@ -83,12 +90,12 @@ class ConfigurationService:
         instance = onitdb.parameter.get(key=namespaced_key)
 
         if instance:
-            if "value" not in instance:
+            if not hasattr(instance, "value"):
                 return None
 
-            current_value = instance.get("value", None)
+            current_value = getattr(instance, "value")
             if current_value != value:
-                instance["value"] = value
+                setattr(instance, "value", value)
                 onitdb.parameter.update(instance)
 
             cache.set(

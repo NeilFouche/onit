@@ -3,8 +3,10 @@ Library of algorithms
 """
 import heapq
 
+from components.graphs import Graph, Node
 
-def dijkstra(graph, start, target):
+
+def dijkstra(graph: Graph, start, target) -> list[Node]:
     """
     Implementation of Dijkstra's algorithm to find the shortest path between two nodes.
 
@@ -14,8 +16,7 @@ def dijkstra(graph, start, target):
         target (str): The target node identifier.
 
     Returns:
-        dict: A dictionary representing the shortest path from start to the target,
-        including the path data.
+        path (list[str]): A list of node names representing the shortest path from start to the target.
     """
 
     # Initialize the distances and predecessors
@@ -42,8 +43,7 @@ def dijkstra(graph, start, target):
 
         for neighbour_name in unvisited_neighbours:
             neighbour_node = graph.get_node(neighbour_name)
-            path_cost = current_cost + \
-                current_node.distance_to(neighbour_name)
+            path_cost = current_cost + current_node.distance_to(neighbour_name)
 
             # Update the nodes if a shorter path is found
             if path_cost < neighbour_node.cost:
@@ -52,24 +52,24 @@ def dijkstra(graph, start, target):
                 heapq.heappush(priority_queue, neighbour_node)
 
     # Reconstruct the path
-    path = {}
+    path = []
     current_node = target_node
     while current_node:
-        path = current_node.get_path_data(path)
+        path.append(current_node.name)
         current_node = current_node.predecessor
 
     return path
 
 
-def a_star(graph, start, target):
+def a_star(graph: Graph, start, target) -> list[Node]:
     """
     Implementation of A* algorithm to find the shortest path between two nodes:
-    Cost, f(n) = g(n) + h(n)
+    **Cost, f(n) = g(n) + h(n)**
 
-    Path Cost, g(n):
+    * **Path Cost, g(n)**:
         The cost of the path from the start node to the current node.
 
-    Heuristic, h(n):
+    * **Heuristic, h(n)**:
         The heuristic used is the absolute difference in height between
         the current node and the target node.
 
@@ -79,8 +79,7 @@ def a_star(graph, start, target):
         target (str): The target node identifier.
 
     Returns:
-        dict: A dictionary representing the shortest path from start to the target,
-        including the path data.
+        path (list[str]): A list of node names representing the shortest path from start to the target.
     """
 
     def heuristic(node, target_node):
@@ -110,13 +109,11 @@ def a_star(graph, start, target):
 
         for neighbour_name in unvisited_neighbours:
             neighbour_node = graph.get_node(neighbour_name)
-            path_cost = current_cost + \
-                current_node.distance_to(neighbour_name)
+            path_cost = current_cost + current_node.distance_to(neighbour_name)
 
             # Update the nodes if a shorter path is found
             if path_cost < neighbour_node.cost:
-                neighbour_node.cost = path_cost + \
-                    heuristic(neighbour_node, target_node)
+                neighbour_node.cost = path_cost + heuristic(neighbour_node, target_node)
                 neighbour_node.predecessor = current_node
                 heapq.heappush(priority_queue, neighbour_node)
 
@@ -124,7 +121,7 @@ def a_star(graph, start, target):
     path = []
     current_node = target_node
     while current_node:
-        path.append(current_node.get_path_data(path))
+        path.append(current_node)
         current_node = current_node.predecessor
 
     return path

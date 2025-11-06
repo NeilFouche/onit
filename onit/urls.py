@@ -23,5 +23,5 @@ admin.site.site_header = "On It Admin"
 urlpatterns = [
     path('', views.index, name='index'),
     path("admin/", admin.site.urls),
-    path("db/", include('api.urls')),
+    path("cb/", include('api.urls')),
 ]

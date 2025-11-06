@@ -159,9 +159,3 @@ class ParameterAdmin(admin.ModelAdmin):
 class SocialPlatformAdmin(admin.ModelAdmin):
     list_display = ['id', 'key', 'label', 'slug', 'url', 'active']
     list_editable = ['key', 'label', 'slug', 'url', 'active']
-
-
-@admin.register(models.S3Bucket)
-class S3BucketAdmin(admin.ModelAdmin):
-    list_display = ['id', 'key', 'label', 'aws_region', 'is_active']
-    list_editable = ['key', 'label', 'is_active']

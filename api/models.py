@@ -97,7 +97,7 @@ class Region(models.Model):
     )
     label = models.CharField(max_length=255, db_index=True)
     description = models.TextField(null=True, blank=True)
-    capital = models.CharField(max_length=255)
+    capital = models.CharField(max_length=255, null=True)
     population = models.IntegerField()
 
     def __str__(self) -> str:
@@ -265,76 +265,6 @@ class ServiceMethod(models.Model):
         ordering = ['service', 'label']
 
 
-################################## CLIENTS ###################################
-
-
-class Client(models.Model):
-    """
-    A data model for Clients
-
-    logo -> EntityMedia
-    """
-
-    key = models.CharField(max_length=64, db_index=True)
-    slug = models.CharField(max_length=255, null=True, blank=True)
-    label = models.CharField(max_length=511)
-    contact = models.CharField(max_length=255)
-    office = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-    industry = models.CharField(max_length=255, null=True, blank=True)
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
-
-################################## PROJECTS ###################################
-
-
-class Project(models.Model):
-    """
-    A data model for Projects
-
-    FKs = region, client, service
-    M2M = {media: EntityMedia}
-    """
-
-    key = models.CharField(max_length=64, db_index=True)
-    slug = models.SlugField(max_length=255, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    description = models.TextField(null=True, blank=True)
-    location = models.CharField(max_length=255)
-    region = models.ForeignKey(
-        Region,
-        on_delete=models.PROTECT,
-        db_index=True,
-        related_name='projects'
-    )
-    client = models.ForeignKey(
-        Client,
-        on_delete=models.PROTECT,
-        db_index=True,
-        related_name='projects'
-    )
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    featured = models.BooleanField(default=False)
-    service = models.ForeignKey(
-        Service,
-        on_delete=models.PROTECT,
-        db_index=True,
-        related_name='projects'
-    )
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
-
 ################################## OFFICE & OFFICE HOURS ###################################
 
 
@@ -430,74 +360,6 @@ class Faq(models.Model):
         ordering = ['key']
 
 
-class Question(models.Model):
-    """
-    A data model for Questions
-
-    FKs = section
-    O2M = {options: QuestionOption}
-
-    Add choices for the type when implementing this functionality.
-    """
-
-    key = models.CharField(max_length=64, db_index=True)
-    slug = models.SlugField(max_length=255, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    hint = models.CharField(max_length=255, null=True, blank=True)
-    default_value = models.CharField(max_length=255, null=True, blank=True)
-    type = models.CharField(max_length=32)
-    role = models.CharField(max_length=32)
-    section = models.CharField(max_length=255, null=True, blank=True)
-    validation_schema = models.JSONField(
-        encoder=DjangoJSONEncoder,
-        null=True,
-        blank=True
-    )
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
-
-class QuestionOption(models.Model):
-    """A data model for QuestionOptions"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    question = models.ForeignKey(
-        Question,
-        on_delete=models.CASCADE,
-        related_name='options'
-    )
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
-
-class QuestionResponse(models.Model):
-    """A data model for Question Responses"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    description = models.TextField(null=True, blank=True)
-    question = models.ForeignKey(
-        Question,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="responses"
-    )
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
 
 ################################## SEGMENTS ###################################
 
@@ -512,7 +374,7 @@ class Segment(models.Model):
     """
 
     key = models.CharField(max_length=64, unique=True, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
+    label = models.CharField(max_length=255, db_index=True, null=True)
     type = models.CharField(max_length=255)
     featured = models.BooleanField(default=False)
     context = models.CharField(max_length=32, db_index=True)
@@ -565,7 +427,7 @@ class BodyItem(models.Model):
     )
 
     def __str__(self) -> str:
-        return str(self.id)
+        return str(self.id)  # type: ignore
 
     class Meta:
         ordering = ['id']
@@ -749,70 +611,6 @@ class SocialPlatform(models.Model):
         return str(self.label)
 
 
-class S3Bucket(models.Model):
-    """A data model for AWSBuckets"""
-
-    key = models.CharField(
-        max_length=255,
-        unique=True,
-        help_text="The unique identifier or key for the bucket (e.g. onitweb-assets)."
-    )
-    label = models.CharField(
-        max_length=255,
-        help_text="A human-readable label for identifying the bucket (e.g. Repository for media assets)."
-    )
-    description = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Optional description of the bucket's purpose or contents. (e.g. For managing content used by On It Web Application)"
-    )
-    aws_region = models.CharField(
-        max_length=50,
-        help_text="The AWS region where the bucket is hosted (e.g. af-south-1)."
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="The timestamp when this entry was created."
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        help_text="The timestamp when this entry was last updated."
-    )
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Flag to indicate if the bucket is actively in use."
-    )
-
-    class Meta:
-        verbose_name = "S3 Bucket"
-        verbose_name_plural = "S3 Buckets"
-        ordering = ['label']
-
-    def __str__(self):
-        return f"{self.label} ({self.key})"
-
-
-################################### METHOD ####################################
-
-
-class Method(models.Model):
-    """A data model for Methods"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    description = models.TextField(null=True, blank=True)
-    path = models.CharField(max_length=255)
-    featured = models.BooleanField(default=False)
-    inforce = models.BooleanField(default=False)
-    last_update = models.DateTimeField(auto_now=True, null=True, blank=True)
-
-    def __str__(self) -> str:
-        return str(self.label)
-
-    class Meta:
-        ordering = ['label']
-
-
 ###############################################################################
 #                  Relationship Models (Intermediate Tables)                  #
 ###############################################################################
@@ -873,185 +671,3 @@ class EntityMedia(models.Model):
 
     class Meta:
         verbose_name_plural = 'Entity media'
-
-
-################################ ENTITY METHOD ################################
-
-
-class EntityMethod(models.Model):
-    """A data model for Entity Methods
-
-    For linking methods to an entity (service, person, ...)
-    """
-
-    method = models.ForeignKey(
-        Method,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="methodentities"
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="entitymethods"
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')
-
-
-################################# ENTITY ROLE #################################
-
-
-class RoleEntity(models.Model):
-    """
-    A data model for Entity Roles
-
-    For linking roles to an entity
-    """
-
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="roleentities"
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="entityroles"
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')
-
-
-################################ ENTITY STATE #################################
-
-
-class EntityState(models.Model):
-    """
-    A data model for Entity States
-
-    For storing captured entity states in the database
-    """
-
-    table = models.CharField(max_length=64, db_index=True)
-    entity_id = models.CharField(max_length=64, db_index=True)
-    entity_key = models.CharField(max_length=64, db_index=True)
-    value = models.CharField(max_length=255, null=True, blank=True)
-    created_date = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['table', 'entity_id', 'created_date']
-
-
-############################### PROJECT ENTITY ################################
-
-
-class ProjectEntity(models.Model):
-    """
-    A data model for Project Entities
-
-    For linking entities to a project
-    """
-
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="projectentities"
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="entityprojects"
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')
-
-    class Meta:
-        verbose_name_plural = 'Project entities'
-
-
-################################# DEPENDENCY ##################################
-
-
-class Dependency(models.Model):
-    """A data model for Dependencies"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    description = models.TextField(null=True, blank=True)
-    category = models.CharField(max_length=255, null=True, blank=True)
-    parameter = models.ForeignKey(
-        Parameter,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        db_index=True
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')
-
-
-################################## Version ####################################
-
-
-class Version(models.Model):
-    """A data model for Versions"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    version = models.CharField(max_length=16, db_index=True)
-    label = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True, db_index=True)
-    category = models.CharField(max_length=255, null=True, blank=True)
-    effective_date = models.DateField(db_index=True)
-    expired_date = models.DateField(
-        default=None, null=True, blank=True, db_index=True
-    )
-    value = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    reason = models.TextField()
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True,
-        related_name="versions"
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')
-
-
-#################################### RULE #####################################
-
-
-class Rule(models.Model):
-    """A data model for Rules"""
-
-    key = models.CharField(max_length=64, db_index=True)
-    label = models.CharField(max_length=255, db_index=True)
-    description = models.TextField(null=True, blank=True)
-    category = models.CharField(max_length=255, null=True, blank=True)
-    constraint = models.CharField(max_length=255, null=True, blank=True)
-    enforcement_level = models.CharField(max_length=255, db_index=True)
-    parameter = models.ForeignKey(
-        Parameter,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        db_index=True
-    )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        db_index=True
-    )
-    object_id = models.PositiveIntegerField(db_index=True)
-    entity = GenericForeignKey('content_type', 'object_id')

@@ -6,32 +6,33 @@ Handling Requests from the frontend
 import json
 import logging
 from django.core.cache import cache
+from django.conf import settings
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import redirect
-from api.models import Employee, MediaAsset
-from components.preprocessors import PreProcessor
-from components.postprocessors import PostProcessor
+from api.models import Employee, MediaAsset, Person, EntityMedia
 from libs.strings import camel_to_snake
 from services.database import DatabaseService
+from services.data import DataService
 from services.rest import RestService
+from services.processing import TransformationService
 
 logger = logging.getLogger("django")
 
 
 @ensure_csrf_cookie
-def view_manager(request):
+def view_manager(request: HttpRequest):
     """
     View to manage requests from the frontend
     The RestService will determine which view in this file to call and return
     the view to handle the request.
     """
 
-    hash_key = RestService.hash_request(request)
-    view = RestService.get_view(hash_key)
+    request_key = RestService.hash_request(request)
+    view = RestService.get_view(request_key)
 
-    return view(request, hash_key)
+    return view(request_key)
 
 
 ###############################################################################
@@ -40,35 +41,24 @@ def view_manager(request):
 
 
 @csrf_exempt
-@RestService.register_view('get_token')
-def get_token(request, hash_key=None):
+@RestService.register_view('TOKEN:CSRF')
+def get_token(request_key):
     """
     View to handle GET requests for CSRF token
     """
+    request = RestService.get_request(request_key)
     return RestService.get_token(request)
 
 
 @RestService.register_view('GET')
-def get_view(request, hash_key):
+def get_handler(request_key):
     """
     View to handle GET requests from the frontend
     """
     try:
-        # Get the requested records
-        data = cache.get(hash_key)
-        if not data:
-            onitdb = DatabaseService.get_database()
+        data = DataService.fetch_data(request_key)
 
-            data = onitdb.fetch_data(
-                target=RestService.get_target_table(hash_key),
-                source=RestService.get_starting_table(hash_key),
-                filter_params=RestService.get_query_parmeters(hash_key),
-                hash_key=hash_key
-            )
-
-            cache.set(hash_key, data)
-
-        return RestService.response(hash_key, data)
+        return RestService.response(request_key, data)
     except ValueError as e:
         return RestService.error_response(error=e)
 
@@ -80,45 +70,32 @@ def get_view(request, hash_key):
 
 @transaction.atomic
 @RestService.register_view('POST')
-def post_view(request, hash_key):
+def post_handler(request_key):
     """
     View to handle POST requests from the frontend
     """
     try:
-        logger.info(f"Received cookies: {request.COOKIES}")
+        request = RestService.get_request(request_key)
+        if request:
+            logger.info(f"Received cookies: {request.COOKIES}")
 
         # Set the request
-        data = RestService.get_request_body(hash_key)
-        table_name = RestService.get_target_table(hash_key)
+        data = RestService.get_request_body(request_key)
+        table_name = RestService.get_command_target(request_key)
 
         # Create the record
         onitdb = DatabaseService.get_database()
-        table = onitdb.get_table(camel_to_snake(table_name))
+        table = onitdb.get(camel_to_snake(table_name))
 
-        # Check processors
-        preprocessor_name = f"{table.model_name}:Create"
-        preprocessor = PreProcessor.get_processor(
-            implementation=preprocessor_name, table=table
-        )
-        if not preprocessor:
-            preprocessor_name = "Table:Create"
+        processor = TransformationService.get_processor(f"Create:{table_name}:Pre")
+        preprocessed_data = processor.transform(data, request_key)
 
-        postprocessor_name = f"{table.model_name}:Create"
-        postprocessor = PostProcessor.get_processor(
-            implementation=postprocessor_name, table=table
-        )
-        if not postprocessor:
-            postprocessor_name = "Table:Create"
+        data = table.create(preprocessed_data)
 
-        # Create the record
-        data = table.create(
-            json.loads(data),
-            pre_processor=preprocessor_name,
-            post_processor=postprocessor_name,
-            hash_key=hash_key
-        )
+        processor = TransformationService.get_processor(f"Create:{table_name}:Post")
+        preprocessed_data = processor.transform(data, request_key)
 
-        return RestService.response(hash_key, data)
+        return RestService.response(request_key, data)
     except ValueError as err:
         return RestService.error_response(error=err)
 
@@ -128,11 +105,14 @@ def post_view(request, hash_key):
 ###############################################################################
 
 
-def index(request):
+def index(request, *args, **kwargs):
     """
     View to handle requests to the root URL
     """
-    return redirect("https://main.d2aw166h87kmvv.amplifyapp.com/")
+    if settings.ENV == 'production':
+      return redirect("https://www.onitafrica.com/")
+
+    return redirect("db/backend-test/")
 
 
 ###############################################################################
@@ -140,7 +120,7 @@ def index(request):
 ###############################################################################
 
 
-def health_check(request):
+def health_check(request, *args, **kwargs):
     """
     View to handle requests to the root URL
     """
@@ -152,7 +132,7 @@ def health_check(request):
 ###############################################################################
 
 
-def clear_cache(request):
+def clear_cache(request, *args, **kwargs):
     """
     View to handle requests to the root URL
     """
@@ -165,39 +145,18 @@ def clear_cache(request):
 ###############################################################################
 
 
-def backend_test(request):
-    hash_key = RestService.hash_request(request)
-    return JsonResponse({"hash": hash_key})
+def backend_test(request, *args, **kwargs):
+    request_key = RestService.hash_request(request)
+    return JsonResponse({"hash": request_key})
 
 
-def test_view(request, hash_key=None):
+def test_view(request, request_key=None):
     """
     View to handle test requests from the frontend
     """
-    hash_key = RestService.hash_request(request)
+    request_key = RestService.hash_request(request)
 
     # Select related entities
-    related_entity = Employee
-    related_entity_type = "employee"
-    query_parameters = {"key": "oi-002"}
+    data = EntityMedia.objects.filter(object_id__in=1, content_type__model='service')
 
-    # right set ------------------------v
-    intermediate_values = related_entity.objects.\
-        filter(**query_parameters).\
-        values_list("id", flat=True)
-
-    # Filter target entities
-    target = MediaAsset
-    target_related_name = "mediaentities"  # defined on table
-
-    filter_parameters = {
-        f"{target_related_name}__content_type__model": related_entity_type,
-        f"{target_related_name}__object_id__in": intermediate_values
-    }
-
-    # left set --v
-    data = target.objects.filter(**filter_parameters)
-
-    cache.clear()
-
-    return RestService.response(list(data.values()))
+    return RestService.response(request_key, data=list(data.values()))

@@ -9,7 +9,7 @@ Communication media:
 
 from django.core.mail import send_mail
 from services.database import DatabaseService
-from services.transformer import TransformerService
+from services.processing import TransformationService
 
 
 class CommunicationService:
@@ -46,14 +46,14 @@ class CommunicationService:
         """
         # Resolve the message
         transformer_name = configuration.get("transformer")
-        transformer = TransformerService.get_transformer(transformer_name)
+        transformer = TransformationService.get_processor(transformer_name)
         message = transformer.transform(data) if transformer else ""
 
         # Set recipient list
         recipient_groups = configuration.get("recipient_groups")
         onitdb = DatabaseService.get_database()
         onitdb.group.set_queryset(
-            hash_key="Notification:New:Enquiry",
+            request_key="Notification:New:Enquiry",
             filter_params={"name__in": recipient_groups},
             reset=True
         )

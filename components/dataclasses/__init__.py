@@ -2,6 +2,8 @@
 components/dataclasses/__init__.py
 """
 
-from .parameter_data import ParameterData
+from .field import TableField
 
-__all__ = ["ParameterData"]
+__all__ = [
+  "TableField",
+]
