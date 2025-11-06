@@ -109,24 +109,19 @@ CACHES = {
 #                              Database Settings                              #
 ###############################################################################
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": get_secret("DATABASE_NAME", ENV),
+        "HOST": get_secret("DATABASE_ENDPOINT", ENV),
+        'PORT': get_secret("PORT", ENV),
+        "USER": get_secret("DATABASE_USER", ENV),
+        "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+    }
+}
+
 if ENV == 'production':
-    DATABASES = {
-       'default': dj_database_url.config(
-          conn_max_age=600,
-          conn_health_checks=True
-       )
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": get_secret("DATABASE_NAME", ENV),
-            "HOST": get_secret("DATABASE_ENDPOINT", ENV),
-            'PORT': get_secret("PORT", ENV),
-            "USER": get_secret("DATABASE_USER", ENV),
-            "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
-        }
-    }
+    DATABASES['default'] = dj_database_url.parse(get_secret("DATABASE_URL", ENV)) # type: ignore
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -204,7 +199,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onitafrica.com',
     'https://*.railway.app',
-    "onit.production.up.railway.app"
+    "https://onit.production.up.railway.app"
     'http://localhost:3001',
     'http://localhost:8000'
 ]
