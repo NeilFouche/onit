@@ -110,16 +110,23 @@ CACHES = {
 #                              Database Settings                              #
 ###############################################################################
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": get_secret("DATABASE_NAME", ENV),
-        "HOST": get_secret("DATABASE_ENDPOINT", ENV),
-        'PORT': get_secret("PORT", ENV),
-        "USER": get_secret("DATABASE_USER", ENV),
-        "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+if ENV == 'production':
+    DB_CONFIG = dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
+    if not DB_CONFIG:
+        raise ValueError("DATABASE_URL environment variable is not set in production environment.")
+    DATABASES = {'default': DB_CONFIG}
+
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": get_secret("DATABASE_NAME", ENV),
+            "HOST": get_secret("DATABASE_ENDPOINT", ENV),
+            'PORT': get_secret("PORT", ENV),
+            "USER": get_secret("DATABASE_USER", ENV),
+            "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+        }
     }
-}
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
