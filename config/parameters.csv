@@ -1,0 +1,5 @@
+id,key,label,slug,description,value,default,data_type,category,scope
+4,Cache:ObjectCacheTimeout:Global,"Timeout for object cache items",object_cache_timeout_global,"The time before an object cache item is considered stale",86400,86400,int,Cache,Global
+5,Cache:ObjectCacheStorageThreshold:Global,"Threshold for object cache storage",object_cache_storage_threshold_global,"Rated storage capacity for object cache items in bytes",52428800,52428800,int,Cache,Global
+6,VersionControl:Parameter:Global,"Version control for parameters",version_control_parameter_global,"Parameters related to version control for the Parameter table",always,always,str,VersionControl,Global
+7,Communication:Notification:New:Enquiry:Global,"Send notification for new enquiry",send_notification_new_enquiry_global,"Send a notification when a new enquiry is created","{'name':'Notify of New Enquiry','medium':'email','recipient_groups':['CustomerService'],'subject':'New enquiry received','transformer':'Communication:New:Enquiry','sender':'admin@onitafrica.com'}",NULL,json,Communication,Global
