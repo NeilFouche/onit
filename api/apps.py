@@ -20,7 +20,7 @@ class ApiConfig(AppConfig):
 
         # Update constants in memory now that the App is ready
         from onit.constants import EMPTY_QUERYSET
-        EMPTY_QUERYSET = Session.objects.none()
+        # EMPTY_QUERYSET = Session.objects.none()
 
         from services.configuration import ConfigurationService
         from services.database import DatabaseService
@@ -31,6 +31,7 @@ class ApiConfig(AppConfig):
 
         # Instantiate Singleton instances
         ApiConfig.database = DatabaseService.get_database()
+        # ApiConfig.database.initialize()
 
         # Load RestService configuration
         RestService.get_control_parameters()

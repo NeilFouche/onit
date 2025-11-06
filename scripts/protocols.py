@@ -102,6 +102,7 @@ def database_protocol():
         # Methods
         file.write("\n")
         file.write("    def get(self, table_name: Optional[str] = None, model_name: Optional[str] = None, content_type_id: Optional[int] = None) -> Table: ...\n")
+        file.write("    def initialize(self) -> None: ...\n")
 
         # Properties
         file.write("\n")

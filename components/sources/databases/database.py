@@ -31,8 +31,7 @@ class PostgreSQLDatabase(Database):
         self._model_names: dict[str, str] = {}
         self._content_types_map: dict[int, str] = {}
         self._content_types: dict[str, int] = {}
-
-        self._initialize()
+        self._is_initialized = False
 
     def get(
         self,
@@ -41,6 +40,10 @@ class PostgreSQLDatabase(Database):
         content_type_id: Optional[int] = None,
         db_table_name: Optional[str] = None
     ) -> Table:
+        if not self._is_initialized:
+            self.initialize()
+            self._is_initialized = True
+
         provided_field = "table name"
         provided_value = None
 
@@ -101,7 +104,7 @@ class PostgreSQLDatabase(Database):
                 self._content_types_map[content_type.pk] = table_name
                 self._content_types[table_name] = content_type.pk
 
-    def _initialize(self):
+    def initialize(self):
         self.map_table_models()
         schema = self.schema
         for table_name in self.table_names:
@@ -186,3 +189,16 @@ class PostgreSQLDatabase(Database):
 
         return self.__schema_graph
 
+    ###########################################################################
+    #                              MAGIC METHODS                              #
+    ###########################################################################
+
+    def __getattr__(self, table_name: str) -> Table:
+        if not self._is_initialized:
+            self.initialize()
+            self._is_initialized = True
+
+        try:
+            return object.__getattribute__(self, table_name)
+        except AttributeError:
+            raise AttributeError(f"Table with name '{table_name}' does not exist in the database.")
