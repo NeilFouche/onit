@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
     "api.onitafrica.com",
     "www.onitafrica.com",
     "onitafrica.com",
-    "onit.production.up.railway.app"
+    "onit.production.up.railway.app",
     "localhost",
     "127.0.0.1",
     "0.0.0.0"
@@ -110,21 +110,10 @@ CACHES = {
 #                              Database Settings                              #
 ###############################################################################
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": get_secret("DATABASE_NAME", ENV),
-        "HOST": get_secret("DATABASE_ENDPOINT", ENV),
-        'PORT': get_secret("PORT", ENV),
-        "USER": get_secret("DATABASE_USER", ENV),
-        "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
-    }
-}
-
 if ENV == 'production':
     DB_CONFIG = dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
     if not DB_CONFIG:
-        print("WARNING: No DATABASE_URL found in environment variables.")
+        raise ValueError("DATABASE_URL environment variable is not set in production environment.")
     DATABASES = {'default': DB_CONFIG}
 
 else:
@@ -195,7 +184,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     'https://www.onitafrica.com',
     'http://www.onitafrica.com',
-    "onit.production.up.railway.app"
+    "onit.production.up.railway.app",
     'http://localhost:3001',
     'http://localhost:8000'
 ]
@@ -215,7 +204,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onitafrica.com',
     'https://*.railway.app',
-    "https://onit.production.up.railway.app"
+    "https://onit.production.up.railway.app",
     'http://localhost:3001',
     'http://localhost:8000'
 ]
