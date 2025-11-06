@@ -1,0 +1,13 @@
+{
+  "insert": "Database",
+  "select": "Database",
+  "serve": "OS",
+  "lookup": "OS",
+  "use": "External:Service",
+  "suggest": "External:API",
+  "summarize": "External:API",
+  "classify": "ML:Models",
+  "predict": "ML:Models",
+  "estimate": "ML:Models",
+  "recommend": "ML:Models"
+}

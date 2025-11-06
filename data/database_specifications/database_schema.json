@@ -1,0 +1,500 @@
+{
+  "Body": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "BodyItem",
+        "distance": 1
+      },
+      {
+        "name": "Segment",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "BodyItem": "items",
+      "Segment": "segment"
+    }
+  },
+  "BodyItem": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Body",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Body": "body"
+    }
+  },
+  "Client": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Project",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "Project": "projects"
+    }
+  },
+  "ContentType": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "EntityMedia",
+        "distance": 1
+      },
+      {
+        "name": "EntityFeature",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "EntityMedia": "entitymedia",
+      "EntityFeature": "entityfeatures"
+    }
+  },
+  "Employee": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Person",
+        "distance": 3
+      },
+      {
+        "name": "Role",
+        "distance": 3
+      },
+      {
+        "name": "EntityMedia",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Person": "person",
+      "Role": "role",
+      "EntityMedia": "entitymedia"
+    }
+  },
+  "Enquiry": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "EntityFeature",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "EntityFeature": "entityfeatures"
+    }
+  },
+  "EntityFeature": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Feature",
+        "distance": 2
+      },
+      {
+        "name": "MediaAsset",
+        "distance": 2
+      },
+      {
+        "name": "Enquiry",
+        "distance": 3
+      },
+      {
+        "name": "ContentType",
+        "distance": 4
+      }
+    ],
+    "foreign_keys": {
+      "Feature": "feature",
+      "MediaAsset": "object_id",
+      "Enquiry": "object_id",
+      "ContentType": "content_type"
+    },
+    "type": "intermediate",
+    "dependent_table": "Feature"
+  },
+  "EntityMedia": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "ContentType",
+        "distance": 3
+      },
+      {
+        "name": "Employee",
+        "distance": 3
+      },
+      {
+        "name": "MediaAsset",
+        "distance": 1
+      },
+      {
+        "name": "Office",
+        "distance": 3
+      },
+      {
+        "name": "Service",
+        "distance": 3
+      },
+      {
+        "name": "ServiceMethod",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "ContentType": "content_type",
+      "Employee": "object_id",
+      "MediaAsset": "media_asset",
+      "Office": "object_id",
+      "ServiceMethod": "object_id",
+      "Service": "object_id"
+    },
+    "type": "intermediate",
+    "dependent_table": "MediaAsset"
+  },
+  "EntityMethod": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Method",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "Method": "method"
+    },
+    "type": "intermediate",
+    "dependent_table": "Method"
+  },
+  "Equipment": {
+    "height": 5,
+    "neighbours": [],
+    "foreign_keys": []
+  },
+  "Feature": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "EntityFeature",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "EntityFeature": "featureentities"
+    }
+  },
+  "FunctionalArea": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Role",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Role": "roles"
+    }
+  },
+  "MediaAsset": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "EntityMedia",
+        "distance": 3
+      },
+      {
+        "name": "EntityFeature",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "EntityMedia": "mediaentities",
+      "EntityFeature": "entityfeatures"
+    }
+  },
+  "Method": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "EntityMethod",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "EntityMethod": "methodentities"
+    }
+  },
+  "Office": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "OperatingHours",
+        "distance": 1
+      },
+      {
+        "name": "EntityMedia",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "OperatingHours": "operatinghourdays",
+      "EntityMedia": "entitymedia"
+    }
+  },
+  "OperatingHours": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Office",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Office": "office"
+    }
+  },
+  "Page": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Page",
+        "distance": 0
+      }
+    ],
+    "foreign_keys": {
+      "Page": "parent"
+    }
+  },
+  "Parameter": {
+    "height": 1,
+    "neighbours": [],
+    "foreign_keys": []
+  },
+  "Person": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Employee",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Employee": "employee"
+    }
+  },
+  "Project": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Client",
+        "distance": 1
+      },
+      {
+        "name": "Region",
+        "distance": 1
+      },
+      {
+        "name": "ProjectEntity",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "Client": "client",
+      "Region": "region",
+      "ProjectEntity": "projectentities"
+    }
+  },
+  "ProjectEntity": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Project",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Project": "project"
+    },
+    "type": "intermediate",
+    "dependent_table": "Project"
+  },
+  "Faq": {
+    "height": 1,
+    "neighbours": [],
+    "foreign_keys": []
+  },
+  "Question": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Response",
+        "distance": 2
+      },
+      {
+        "name": "QuestionOption",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "Response": "responses",
+      "QuestionOption": "options"
+    }
+  },
+  "QuestionOption": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Question",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "Question": "question"
+    }
+  },
+  "Region": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Project",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Project": "projects"
+    }
+  },
+  "ReportingStructure": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Role",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Role": "roles"
+    }
+  },
+  "Response": {
+    "height": 5,
+    "neighbours": [
+      {
+        "name": "Question",
+        "distance": 2
+      }
+    ],
+    "foreign_keys": {
+      "Question": "question"
+    }
+  },
+  "Role": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Employee",
+        "distance": 1
+      },
+      {
+        "name": "RoleEntity",
+        "distance": 3
+      },
+      {
+        "name": "FunctionalArea",
+        "distance": 3
+      },
+      {
+        "name": "ReportingStructure",
+        "distance": 3
+      }
+    ],
+    "foreign_keys": {
+      "Employee": "employees",
+      "RoleEntity": "roleentities",
+      "FunctionalArea": "functional_area",
+      "ReportingStructure": "reporting_level"
+    }
+  },
+  "RoleEntity": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Role",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Role": "role"
+    },
+    "type": "intermediate",
+    "dependent_table": "Role"
+  },
+  "Rule": {
+    "height": 5,
+    "neighbours": [],
+    "foreign_keys": []
+  },
+  "Segment": {
+    "height": 3,
+    "neighbours": [
+      {
+        "name": "Body",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Body": "body"
+    }
+  },
+  "Service": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "ServiceMethod",
+        "distance": 3
+      },
+      {
+        "name": "EntityMedia",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "ServiceMethod": "methods",
+      "EntityMedia": "entitymedia"
+    }
+  },
+  "ServiceMethod": {
+    "height": 1,
+    "neighbours": [
+      {
+        "name": "Service",
+        "distance": 2
+      },
+      {
+        "name": "EntityMedia",
+        "distance": 1
+      }
+    ],
+    "foreign_keys": {
+      "Service": "service",
+      "EntityMedia": "entitymedia"
+    }
+  },
+  "SocialPlatform": {
+    "height": 1,
+    "neighbours": [],
+    "foreign_keys": []
+  },
+  "Terminology": {
+    "height": 5,
+    "neighbours": [],
+    "foreign_keys": []
+  }
+}
