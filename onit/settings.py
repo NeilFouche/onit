@@ -3,6 +3,7 @@ Django settings for onit project.
 Django 5.1.2
 """
 
+import os
 import dj_database_url
 from sys import argv
 from pathlib import Path
@@ -121,7 +122,22 @@ DATABASES = {
 }
 
 if ENV == 'production':
-    DATABASES['default'] = dj_database_url.parse(get_secret("DATABASE_URL", ENV)) # type: ignore
+    DB_CONFIG = dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
+    if not DB_CONFIG:
+        print("WARNING: No DATABASE_URL found in environment variables.")
+    DATABASES = {'default': DB_CONFIG}
+
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": get_secret("DATABASE_NAME", ENV),
+            "HOST": get_secret("DATABASE_ENDPOINT", ENV),
+            'PORT': get_secret("PORT", ENV),
+            "USER": get_secret("DATABASE_USER", ENV),
+            "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+        }
+    }
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
