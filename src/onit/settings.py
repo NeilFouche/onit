@@ -3,28 +3,23 @@ Django settings for onit project.
 Django 5.1.2
 """
 
-import os
-import dj_database_url
-from sys import argv
+from decouple import config
+from django.core.management.utils import get_random_secret_key
 from pathlib import Path
-
-from libs.credentials_manager import get_secret
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Env - Production / development
-if any(cmd in argv for cmd in ['runserver', 'shell', 'makemigrations', 'migrate']):
-  ENV = "development"
-else:
-  ENV = "production"
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret("DJANGO_SECRET_KEY", ENV)
+SECRET_KEY = config("DJANGO_SECRET_KEY", cast=str, default=get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config("DJANGO_DEBUG", cast=bool, default=True)
+
+# Application environment
+ENV = config("ENVIRONMENT", cast=str, default="development")
+print(f"Running in {ENV} environment")
 
 # List of domains that are allowed to make requests to this application
 ALLOWED_HOSTS = [
@@ -36,6 +31,9 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "0.0.0.0"
 ]
+
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
 
 ADMIN = [("Neil", "neil@onitafrica.com")]
 
@@ -113,11 +111,11 @@ CACHES = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": get_secret("DATABASE_NAME", ENV),
-        "HOST": get_secret("DATABASE_ENDPOINT", ENV),
-        'PORT': get_secret("DB_PORT", ENV),
-        "USER": get_secret("DATABASE_USER", ENV),
-        "PASSWORD": get_secret("DATABASE_PASSWORD", ENV)
+        "NAME": config("DATABASE_NAME", "postgres"),
+        "HOST": config("DATABASE_ENDPOINT", default="127.0.0.1"),
+        'PORT': config("DB_PORT", default=5432, cast=int),
+        "USER": config("DATABASE_USER", default="postgres"),
+        "PASSWORD": config("DATABASE_PASSWORD", default="develop")
     }
 }
 

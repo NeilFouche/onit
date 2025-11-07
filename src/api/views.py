@@ -112,7 +112,7 @@ def index(request, *args, **kwargs):
     if settings.ENV == 'production':
       return redirect("https://www.onitafrica.com/")
 
-    return redirect("db/backend-test/")
+    return redirect("cb/health/")
 
 
 ###############################################################################
