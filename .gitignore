@@ -223,3 +223,4 @@ Pipfile
 Pipfile.lock
 .pylintrc
 dev-requirements.txt
+*/cache/

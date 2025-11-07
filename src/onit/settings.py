@@ -16,6 +16,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", cast=str, default=get_random_secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", cast=bool, default=True)
+print(f"Debug mode is {'on' if DEBUG else 'off'}")
 
 # Application environment
 ENV = config("ENVIRONMENT", cast=str, default="development")
@@ -26,7 +27,7 @@ ALLOWED_HOSTS = [
     "api.onitafrica.com",
     "www.onitafrica.com",
     "onitafrica.com",
-    "onit.production.up.railway.app",
+    "onit-production.up.railway.app",
     "localhost",
     "127.0.0.1",
     "0.0.0.0"
@@ -34,6 +35,10 @@ ALLOWED_HOSTS = [
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
+
+print(f"Allowed Hosts: {ALLOWED_HOSTS}")
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ADMIN = [("Neil", "neil@onitafrica.com")]
 

@@ -17,8 +17,8 @@ class ObjectCache(BaseCache):
         self._cached_objects = {}
         self._object_metadata = {}
         self.storage = 0
-        self._timeout = None
-        self.storage_threshold = None
+        self._timeout = 0
+        self.storage_threshold = 0
 
         params = params or {}
         super().__init__(params)
