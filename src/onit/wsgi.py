@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 import os
 from django.core.wsgi import get_wsgi_application
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "onit.settings")
+
 import django
 django.setup()
 
@@ -28,5 +30,4 @@ try:
 except Exception as e:
     print(f"Database connection failed: {e}")
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "onit.settings")
 application = get_wsgi_application()
