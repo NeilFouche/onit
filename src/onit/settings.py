@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     "onit-production.up.railway.app",
     "localhost",
     "127.0.0.1",
+    "100.64.0.2",  # Railway health check IP
     "0.0.0.0"
 ]
 
