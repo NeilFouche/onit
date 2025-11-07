@@ -11,10 +11,10 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 import django
+django.setup()
+
 from django.contrib.auth.models import User
 from django.db import connection
-
-django.setup()
 
 # Temporary database connection check
 try:
