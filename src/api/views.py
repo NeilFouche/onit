@@ -8,7 +8,7 @@ import logging
 from django.core.cache import cache
 from django.conf import settings
 from django.db import transaction
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import redirect
 from api.models import Employee, MediaAsset, Person, EntityMedia
@@ -120,11 +120,12 @@ def index(request, *args, **kwargs):
 ###############################################################################
 
 
+@csrf_exempt
 def health_check(request, *args, **kwargs):
     """
     View to handle requests to the root URL
     """
-    return JsonResponse({"status": "ok"})
+    return HttpResponse("OK")
 
 
 ###############################################################################
