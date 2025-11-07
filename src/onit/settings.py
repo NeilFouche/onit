@@ -54,9 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    'api',
-    "django_extensions",
-    "corsheaders",
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -123,6 +121,8 @@ DATABASES = {
         "PASSWORD": config("DATABASE_PASSWORD", default="develop")
     }
 }
+
+print(f"Database Configured: {DATABASES['default']['HOST']}:{DATABASES['default']['PORT']}/{DATABASES['default']['NAME']} as {DATABASES['default']['USER']}")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
