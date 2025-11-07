@@ -181,7 +181,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     'https://www.onitafrica.com',
     'http://www.onitafrica.com',
-    "https://onit.production.up.railway.app",
+    "https://onit-production.up.railway.app",
     'http://localhost:3001',
     'http://localhost:8000'
 ]
@@ -201,7 +201,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onitafrica.com',
     'https://*.railway.app',
-    "https://onit.production.up.railway.app",
+    "https://onit-production.up.railway.app",
     'http://localhost:3001',
     'http://localhost:8000'
 ]
